@@ -1,25 +1,26 @@
-# <img src="https://via.placeholder.com/40x40.png?text=SA32&font=roboto" alt="SA32 Logo" width="30"/> SA32 (ServiceAuto32)  
+# <img src="./assets/logo.svg" alt="SA32 Logo" width="80" /> SA32 (ServiceAuto32)  
 **Open-source car service booking platform**  
 *"Don’t panic! Just book it."*  
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT) 
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-brightgreen)](https://nodejs.org/) 
+[![Next.js](https://img.shields.io/badge/Next.js-14-blue)](https://nextjs.org/)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/rrshidev/sa32/pulls)  
 
-![SA32 Architecture](https://via.placeholder.com/800x400.png?text=SA32+Next.js+%2B+Telegram+Bot+%2B+PostgreSQL)  
+![SA32 Screenshot](./assets/app-demo.png)  
 
 ## ✨ Features  
 - 📅 **1-click bookings** via Telegram bot or Next.js web app.  
 - 🔧 **Garage dashboard** to manage slots and clients.  
-- 🤖 **Auto-reminders** via Telegraf (Telegram bot).  
+- 🤖 **Auto-reminders** via Telegraf.  
 - 🛠️ **Google Calendar sync** (planned).  
 
 ## 🚀 Tech Stack  
-- **Backend**: Node.js (Express.js/NestJS) + Telegraf for Telegram bot.  
-- **Frontend**: Next.js (React) + Tailwind CSS.  
-- **Database**: PostgreSQL + Prisma ORM.  
+- **Backend**: Node.js 18 (Express.js) + Telegraf.  
+- **Frontend**: Next.js 14 + TypeScript + Tailwind CSS.  
+- **Database**: PostgreSQL 15 + Prisma ORM.  
 - **Testing**: Jest + Supertest.  
-- **Deployment**: Docker + VPS (или Railway/Vercel).  
+- **Deployment**: Docker + Vercel.  
 
 ## �‍💻 Local Development  
 ```bash
@@ -30,15 +31,18 @@ cd sa32
 # 2. Install dependencies
 npm install
 
-# 3. Set up .env (copy from .env.example)
+# 3. Set up .env
 cp .env.example .env
 
-# 4. Run PostgreSQL via Docker
+# 4. Run PostgreSQL
 docker-compose up -d
 
-# 5. Start dev servers
+# 5. Apply database migrations
+npx prisma migrate dev --name init
+
+# 6. Start dev servers
 npm run dev  # Next.js
-npm run bot  # Telegram bot (Telegraf)
+npm run bot  # Telegram bot
 
 🌟 Project Structure
 
