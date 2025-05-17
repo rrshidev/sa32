@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
 import { BotService } from './bot.service';
+import { UserModule } from '../user/user.module';
+import { CarModule } from '../car/car.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
-  imports: [ConfigModule.forRoot()],
+  imports: [UserModule, CarModule, ConfigModule.forRoot()],
   providers: [BotService],
   exports: [BotService],
 })
