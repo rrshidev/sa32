@@ -1,4 +1,4 @@
-# <img src="./assets/logo.svg" alt="SA32 Logo" width="80" /> SA32 (ServiceAuto32)  
+# <img src="https://github.com/rrshidev/sa32/blob/main/logo/logo.png" alt="SA32 Logo" width="80" /> SA32 (ServiceAuto32)  
 **Open-source car service booking platform**  
 *"Don’t panic! Just book it."*  
 
