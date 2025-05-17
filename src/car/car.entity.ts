@@ -1,22 +1,25 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
-import { Car } from '../car/car.entity';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { User } from '../user/user.entity';
 
 @Entity()
-export class User {
+export class Car {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ unique: true })
-  telegramId: number;
-
   @Column({ nullable: true })
-  name: string;
+  vin: string;
 
-  @Column({ nullable: true })
-  phone: string;
+  @Column()
+  model: string;
 
-  @OneToMany(() => Car, (car) => car.user)
-  cars: Car[];
+  @Column()
+  mark: string;
+
+  @Column()
+  year: number;
+
+  @ManyToOne(() => User, (user) => user.cars)
+  user: User;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
