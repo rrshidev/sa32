@@ -1,99 +1,73 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# <img src="https://via.placeholder.com/40x40.png?text=SA32&font=roboto" alt="SA32 Logo" width="30"/> SA32 (ServiceAuto32)  
+**Open-source car service booking platform**  
+*"Don’t panic! Just book it."*  
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT) 
+[![Node.js](https://img.shields.io/badge/Node.js-18%2B-brightgreen)](https://nodejs.org/) 
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/rrshidev/sa32/pulls)  
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+![SA32 Architecture](https://via.placeholder.com/800x400.png?text=SA32+Next.js+%2B+Telegram+Bot+%2B+PostgreSQL)  
 
-## Description
+## ✨ Features  
+- 📅 **1-click bookings** via Telegram bot or Next.js web app.  
+- 🔧 **Garage dashboard** to manage slots and clients.  
+- 🤖 **Auto-reminders** via Telegraf (Telegram bot).  
+- 🛠️ **Google Calendar sync** (planned).  
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 🚀 Tech Stack  
+- **Backend**: Node.js (Express.js/NestJS) + Telegraf for Telegram bot.  
+- **Frontend**: Next.js (React) + Tailwind CSS.  
+- **Database**: PostgreSQL + Prisma ORM.  
+- **Testing**: Jest + Supertest.  
+- **Deployment**: Docker + VPS (или Railway/Vercel).  
 
-## Project setup
-
+## �‍💻 Local Development  
 ```bash
-$ npm install
-```
+# 1. Clone repo
+git clone https://github.com/rrshidev/sa32.git
+cd sa32
 
-## Compile and run the project
+# 2. Install dependencies
+npm install
 
-```bash
-# development
-$ npm run start
+# 3. Set up .env (copy from .env.example)
+cp .env.example .env
 
-# watch mode
-$ npm run start:dev
+# 4. Run PostgreSQL via Docker
+docker-compose up -d
 
-# production mode
-$ npm run start:prod
-```
+# 5. Start dev servers
+npm run dev  # Next.js
+npm run bot  # Telegram bot (Telegraf)
 
-## Run tests
+🌟 Project Structure
 
-```bash
-# unit tests
-$ npm run test
+sa32/
+├── bot/               # Telegram bot (Telegraf)
+├── web/               # Next.js app
+├── prisma/            # PostgreSQL schema
+├── tests/             # Jest tests
+└── docker-compose.yml # PostgreSQL config
 
-# e2e tests
-$ npm run test:e2e
+🧪 Running Tests
+bash
 
-# test coverage
-$ npm run test:cov
-```
+npm test     # Run all Jest tests
+npm run test:watch  # Watch mode
 
-## Deployment
+🤝 How to Contribute
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+    Fork the repo → create a feature branch.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+    Follow code style:
 
-```bash
-$ npm install -g mau
-$ mau deploy
-```
+        JavaScript: Airbnb ESLint config.
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+        Git: Conventional commits (e.g., feat: add booking form).
 
-## Resources
+    Test your changes → submit a PR.
 
-Check out a few resources that may come in handy when working with NestJS:
+📜 License
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+MIT © 2024 rrshidev
 
-## Support
-
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
-
-## Stay in touch
-
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
-
-## License
-
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
