@@ -18,4 +18,27 @@ export class UserService {
     const user = this.userRepository.create(userData);
     return this.userRepository.save(user);
   }
+
+  async createMinimalUser(
+    telegramId: number,
+    telegramData: any,
+  ): Promise<User> {
+    return this.userRepository.save({
+      telegramId,
+      name: telegramData.first_name || 'Неизвестный',
+      username: telegramData.username || null,
+      isRegistered: false,
+    });
+  }
+
+  async completeRegistration(
+    userId: number,
+    userData: Partial<User>,
+  ): Promise<User> {
+    await this.userRepository.update(userId, {
+      ...userData,
+      isRegistered: true,
+    });
+    return this.userRepository.findOneBy({ id: userId });
+  }
 }
