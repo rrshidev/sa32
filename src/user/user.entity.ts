@@ -10,6 +10,12 @@ export class User {
   telegramId: number;
 
   @Column({ nullable: true })
+  username: string;
+
+  @Column({ default: false })
+  isRegistered: boolean;
+
+  @Column({ nullable: true })
   name: string;
 
   @Column({ nullable: true })
