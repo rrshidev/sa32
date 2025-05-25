@@ -1,10 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import { Entity, PrimaryColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { User } from '../user/user.entity';
 
 @Entity()
 export class Car {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryColumn('uuid')
+  id: string;
 
   @Column({ nullable: true })
   vin: string;
@@ -19,7 +19,11 @@ export class Car {
   year: number;
 
   @ManyToOne(() => User, (user) => user.cars)
+  @JoinColumn({ name: 'userId' })
   user: User;
+
+  @Column({ type: 'uuid' })
+  userId: string;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;

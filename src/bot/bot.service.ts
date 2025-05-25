@@ -5,6 +5,7 @@ import { UserService } from '../user/user.service';
 import { CarService } from '../car/car.service';
 import { Markup } from 'telegraf';
 import { Context } from 'telegraf';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class BotService {
@@ -29,18 +30,18 @@ export class BotService {
 
       if (!user) {
         // Сохраняем минимальные данные о пользователе
-        await this.userService.create({
+        const createdUser = await this.userService.createMinimal({
           telegramId,
-          name: ctx.from.first_name || 'Неизвестный',
+          name: ctx.from.first_name || 'Пользователь',
           username: ctx.from.username || null,
           isRegistered: false,
         });
 
-        await this.showRegistrationPrompt(ctx);
+        await this.showRegistrationPrompt(ctx, createdUser.name);
       } else if (!user.isRegistered) {
-        await this.showRegistrationPrompt(ctx);
+        await this.showRegistrationPrompt(ctx, user.name);
       } else {
-        await ctx.reply(`С возвращением, ${user.name || 'пользователь'}!`);
+        await ctx.reply(`С возвращением, ${user.name}!`);
         await this.showMainMenu(ctx);
       }
     });
@@ -60,17 +61,47 @@ export class BotService {
     // Обработчики кнопок регистрации
     this.bot.action('register_yes', async (ctx) => {
       const telegramId = ctx.from.id;
-      this.registrationState.set(telegramId, { step: 'name', data: {} });
+      const user = await this.userService.findByTelegramId(telegramId);
+
+      if (!user) {
+        await ctx.reply('Произошла ошибка. Пожалуйста, начните снова с /start');
+        return;
+      }
+
+      this.registrationState.set(telegramId, {
+        step: 'name',
+        data: {
+          currentName: user.name,
+        },
+      });
+
       await ctx.editMessageText(
-        'Отлично! Введите ваше имя (или /cancel для отмены):',
+        `Ваше текущее имя: ${user.name}\nВведите новое имя или нажмите /skip чтобы оставить как есть:`,
       );
     });
 
     this.bot.action('register_no', async (ctx) => {
+      const telegramId = ctx.from.id;
+      const user = await this.userService.findByTelegramId(telegramId);
+      const userName = user?.name || 'Пользователь';
       await ctx.editMessageText(
-        'Вы можете зарегистрироваться позже через /start или меню.',
+        `Хорошо, ${userName}! Вы можете зарегистрироваться позже через /start или меню.`,
       );
       await this.showMainMenu(ctx);
+    });
+
+    // Обработчик команды /skip
+    this.bot.command('skip', async (ctx) => {
+      const telegramId = ctx.from.id;
+      const state = this.registrationState.get(telegramId);
+
+      if (state && state.step === 'name') {
+        state.data.name = state.data.currentName; // Используем текущее имя
+        state.step = 'phone';
+        await ctx.reply(
+          `Оставляем имя ${state.data.name}. Теперь введите ваш телефон:`,
+        );
+      }
     });
 
     // Обработчик текстовых сообщений (для регистрации)
@@ -81,35 +112,57 @@ export class BotService {
       if (state) {
         switch (state.step) {
           case 'name':
-            state.data.name = ctx.message.text;
+            // Если пользователь ввел новое имя - используем его, иначе оставляем текущее
+            state.data.name = ctx.message.text.trim() || state.data.currentName;
             state.step = 'phone';
-            await ctx.reply('Теперь введите ваш телефон:');
+            await ctx.reply(
+              `Имя сохранено: ${state.data.name}\nТеперь введите ваш телефон:`,
+            );
             break;
 
           case 'phone':
-            state.data.phone = ctx.message.text;
+            state.data.phone = ctx.message.text.trim();
             state.step = 'car_mark';
             await ctx.reply('Введите марку вашего автомобиля:');
             break;
 
           case 'car_mark':
-            state.data.carMark = ctx.message.text;
+            state.data.carMark = ctx.message.text.trim();
             state.step = 'car_model';
             await ctx.reply('Введите модель вашего автомобиля:');
             break;
 
           case 'car_model':
-            state.data.carModel = ctx.message.text;
+            state.data.carModel = ctx.message.text.trim();
             state.step = 'car_year';
             await ctx.reply('Введите год выпуска автомобиля:');
             break;
 
           case 'car_year':
-            state.data.carYear = parseInt(ctx.message.text);
+            const year = parseInt(ctx.message.text.trim());
+            if (
+              isNaN(year) ||
+              year < 1900 ||
+              year > new Date().getFullYear() + 1
+            ) {
+              await ctx.reply('Пожалуйста, введите корректный год выпуска:');
+              return;
+            }
+            state.data.carYear = year;
 
-            // Завершаем регистрацию
-            const user = await this.userService.completeRegistration(
-              telegramId,
+            // Получаем пользователя для обновления
+            const user = await this.userService.findByTelegramId(telegramId);
+
+            if (!user) {
+              await ctx.reply(
+                'Произошла ошибка. Пожалуйста, начните снова с /start',
+              );
+              return;
+            }
+
+            // Обновляем данные пользователя
+            const updatedUser = await this.userService.completeRegistration(
+              user.id,
               {
                 name: state.data.name,
                 phone: state.data.phone,
@@ -117,16 +170,19 @@ export class BotService {
               },
             );
 
-            // Сохраняем машину
+            // Сохраняем машину с привязкой к пользователю
             await this.carService.create({
+              id: uuidv4(),
               mark: state.data.carMark,
               model: state.data.carModel,
               year: state.data.carYear,
-              user,
+              user: updatedUser,
             });
 
             this.registrationState.delete(telegramId);
-            await ctx.reply('Регистрация завершена! Спасибо!');
+            await ctx.reply(
+              `Регистрация завершена, ${state.data.name}! Теперь вам доступны все функции.`,
+            );
             await this.showMainMenu(ctx);
             break;
         }
@@ -136,9 +192,16 @@ export class BotService {
     // Обработчики кнопок главного меню
     this.bot.action('workshops_list', async (ctx) => {
       await ctx.editMessageText('Список мастерских будет здесь...');
+      // Здесь будет логика показа мастерских
     });
 
     this.bot.action('my_bookings', async (ctx) => {
+      const user = await this.userService.findByTelegramId(ctx.from.id);
+      if (!user?.isRegistered) {
+        await ctx.reply('Для доступа к записям нужно завершить регистрацию.');
+        await this.showRegistrationPrompt(ctx, user?.name || 'Пользователь');
+        return;
+      }
       await ctx.editMessageText('Ваши записи будут здесь...');
     });
 
@@ -150,7 +213,7 @@ export class BotService {
       const user = await this.userService.findByTelegramId(ctx.from.id);
       if (!user?.isRegistered) {
         await ctx.reply('Для доступа к гаражу нужно завершить регистрацию.');
-        await this.showRegistrationPrompt(ctx);
+        await this.showRegistrationPrompt(ctx, user?.name || 'Пользователь');
         return;
       }
       await ctx.editMessageText('Ваш гараж будет здесь...');
@@ -159,17 +222,18 @@ export class BotService {
     this.bot.action('support', async (ctx) => {
       await ctx.editMessageText('Техподдержка: @ваш_аккаунт');
     });
+
+    this.bot.action('settings', async (ctx) => {
+      await ctx.editMessageText('Настройки будут здесь...');
+    });
   }
 
-  private async showRegistrationPrompt(ctx: Context) {
+  private async showRegistrationPrompt(ctx: Context, currentName: string) {
     await ctx.reply(
-      'Хотите зарегистрироваться? Это позволит сохранить ваши данные и автомобили для быстрой записи.',
+      `Привет, ${currentName}! Хотите зарегистрироваться? Это позволит сохранить ваши данные и автомобили для быстрой записи.`,
       Markup.inlineKeyboard([
-        Markup.button.callback('Да, зарегистрировать', 'register_yes'),
-        Markup.button.callback(
-          'Нет, продолжить без регистрации',
-          'register_no',
-        ),
+        Markup.button.callback('✅ Да, зарегистрировать', 'register_yes'),
+        Markup.button.callback('❌ Продолжить без регистрации', 'register_no'),
       ]),
     );
   }
