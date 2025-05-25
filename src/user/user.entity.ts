@@ -1,28 +1,28 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryColumn, Column, OneToMany } from 'typeorm';
 import { Car } from '../car/car.entity';
 
 @Entity()
 export class User {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryColumn('uuid')
+  id: string;
 
   @Column({ unique: true })
   telegramId: number;
 
-  @Column({ nullable: true })
-  username: string;
-
-  @Column({ default: false })
-  isRegistered: boolean;
-
-  @Column({ nullable: true })
+  @Column()
   name: string;
 
   @Column({ nullable: true })
   phone: string;
 
+  @Column({ nullable: true })
+  username: string;
+
   @OneToMany(() => Car, (car) => car.user)
   cars: Car[];
+
+  @Column({ default: false })
+  isRegistered: boolean;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
