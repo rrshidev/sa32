@@ -54,3 +54,24 @@ pids
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Общие правила
+node_modules/
+.env
+.DS_Store
+dist/
+build/
+*.log
+
+# Бекенд (NestJS)
+backend/.env
+backend/dist/
+
+# Фронтенд (React)
+frontend/.env
+frontend/.env.local
+frontend/build/
+
+# Mini App (Vite)
+telegram-miniapp/.env
+telegram-miniapp/dist/

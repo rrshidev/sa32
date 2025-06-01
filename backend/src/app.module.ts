@@ -4,6 +4,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { BotModule } from './bot/bot.module';
 import { UserModule } from './user/user.module';
 import { CarModule } from './car/car.module';
+import { CalendarModule } from './calendar/calendar.module';
+import { BullModule } from '@nestjs/bull';
 
 @Module({
   imports: [
@@ -30,6 +32,16 @@ import { CarModule } from './car/car.module';
     BotModule,
     UserModule,
     CarModule,
+    CalendarModule,
+    BullModule.forRoot({
+      redis: {
+        host: ConfigService.get<string>('REDIS_HOST'),
+        port: ConfigService.get<string>('REDIS_PORT'),
+      },
+    }),
+    BullModule.registerQueue({
+      name: 'notifications',
+    }),
   ],
 })
 export class AppModule {}
