@@ -1,77 +1,73 @@
-# compiled output
-/dist
-/node_modules
-/build
+# Общие системные файлы
+.DS_Store
+*.swp
+*.swo
+Thumbs.db
 
-# Logs
-logs
+# Файлы окружения
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Логи и кэш
 *.log
+logs
+.pnpm-debug.log*
 npm-debug.log*
-pnpm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-lerna-debug.log*
+.pnpm-store/
 
-# OS
-.DS_Store
+# IDE
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
 
-# Tests
+# Зависимости
+node_modules/
+/dist/
+/build/
+/.next/
+/out/
+
+# Кэш пакетных менеджеров
+/.pnp
+.pnp.js
+
+# Тесты
 /coverage
 /.nyc_output
 
-# IDEs and editors
-/.idea
-.project
-.classpath
-.c9/
-*.launch
-.settings/
-*.sublime-workspace
-
-# IDE - VSCode
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-
-# dotenv environment variable files
-.env
-.env.development.local
-.env.test.local
-.env.production.local
-.env.local
-
-# temp directory
-.temp
-.tmp
-
-# Runtime data
-pids
+# Backend специфичные
 *.pid
 *.seed
 *.pid.lock
 
-# Diagnostic reports (https://nodejs.org/api/report.html)
-report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+# Database
+*.sqlite
+*.sql
+*-dump.sql
 
-# Общие правила
-node_modules/
-.env
-.DS_Store
-dist/
-build/
-*.log
+# NestJS
+*.js.map
+*.d.ts
+*.metadata.json
 
-# Бекенд (NestJS)
-backend/.env
-backend/dist/
+# React
+.eslintcache
 
-# Фронтенд (React)
-frontend/.env
-frontend/.env.local
-frontend/build/
+# TypeScript
+*.tsbuildinfo
 
-# Mini App (Vite)
-telegram-miniapp/.env
-telegram-miniapp/dist/
+# Телеграм бот
+session.json
+
+# Временные файлы
+tmp/
+temp/
