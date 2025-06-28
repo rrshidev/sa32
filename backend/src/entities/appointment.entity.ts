@@ -31,12 +31,18 @@ export class Appointment {
   @Column({ nullable: true })
   notes: string;
 
+  @Column({ nullable: true })
+  cancellationReason: string;
+
+  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  updatedAt: Date;
+
   @ManyToOne(() => Car, (car) => car.appointments)
   car: Car;
 
-  @ManyToOne(() => Service)
+  @ManyToOne(() => Service, (service) => service.appointments)
   service: Service;
 
   @ManyToOne(() => Master, { nullable: true })
-  master: Master;
+  master: Master | null;
 }

@@ -4,6 +4,7 @@ import {
   Column,
   OneToOne,
   JoinColumn,
+  OneToMany,
 } from 'typeorm';
 import { ClientProfile } from './client-profile.entity';
 import { ServiceProfile } from './service-profile.entity';
@@ -40,4 +41,7 @@ export class User {
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
+
+  @OneToMany(() => Notification, (notification) => notification)
+  notifications: Notification[];
 }

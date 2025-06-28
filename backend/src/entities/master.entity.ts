@@ -18,6 +18,12 @@ export class Master {
   @Column('int')
   experienceYears: number;
 
+  @Column({ default: 9 })
+  workStartHour: number;
+
+  @Column({ default: 18 })
+  workEndHour: number;
+
   @ManyToOne(() => ServiceProfile, (serviceProfile) => serviceProfile.masters)
   serviceProfile: ServiceProfile;
 }
