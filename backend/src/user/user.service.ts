@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from '../entities/user.entity';
+import { User, UserRole } from '../entities/user.entity';
 import { ClientProfile } from '../entities/client-profile.entity';
 import { ServiceProfile } from '../entities/service-profile.entity';
 import * as bcrypt from 'bcrypt';
@@ -47,11 +47,13 @@ export class UserService {
       if (!updateData.currentPassword) {
         throw new Error('Current password is required');
       }
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       const isValid = await bcrypt.compare(
         updateData.currentPassword,
         user.password,
       );
       if (!isValid) throw new Error('Invalid current password');
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       user.password = await bcrypt.hash(updateData.newPassword, 10);
     }
 
@@ -61,7 +63,7 @@ export class UserService {
   async getProfile(userId: string) {
     const user = await this.findOneById(userId);
 
-    if (user.role === 'client') {
+    if (user.role === UserRole.CLIENT) {
       return {
         ...user,
         profile: user.clientProfile,

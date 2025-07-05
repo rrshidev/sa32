@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppointmentService } from './appointment.service';
+import { NotFoundException } from '@nestjs/common';
 
 describe('AppointmentService', () => {
   let service: AppointmentService;
@@ -65,3 +66,7 @@ async getServiceAppointments(serviceId: string, filter: AppointmentFilter) {
     expect(service).toBeDefined();
   });
 });
+function updateAppointment(userId: any, string: any, id: any, string1: any, updateDto: any, UpdateAppointmentDto: any) {
+  throw new Error('Function not implemented.');
+}
+

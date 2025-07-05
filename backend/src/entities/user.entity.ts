@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { ClientProfile } from './client-profile.entity';
 import { ServiceProfile } from './service-profile.entity';
+import { Notification } from './notification.entity';
 
 export enum UserRole {
   CLIENT = 'client',
