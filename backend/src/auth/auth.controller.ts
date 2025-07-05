@@ -16,7 +16,7 @@ export class AuthController {
   @ApiOperation({ summary: 'User login' })
   @ApiResponse({ status: 200, description: 'Successful login' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async login(@Request() req) {
+  login(@Request() req) {
     return this.authService.login(req.user);
   }
 
@@ -25,6 +25,6 @@ export class AuthController {
   @ApiResponse({ status: 201, description: 'User registered' })
   @ApiResponse({ status: 400, description: 'Bad request' })
   async register(@Body() createUserDto: CreateUserDto) {
-    return this.authService.register(createUserDto);
+    return this.authService.login(createUserDto);
   }
 }
