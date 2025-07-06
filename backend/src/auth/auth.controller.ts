@@ -27,4 +27,9 @@ export class AuthController {
   async register(@Body() createUserDto: CreateUserDto) {
     return this.authService.login(createUserDto);
   }
+
+  // @Post('telegram')
+  // async telegramAuth(@Body() data: { initData: string }) {
+  //   return this.authService.authenticateTelegram(data.initData);
+  // }
 }
