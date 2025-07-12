@@ -75,4 +75,18 @@ export class UserService {
       };
     }
   }
+
+  async findByTelegramId(telegramId: number) {
+    return this.userRepository.findOne({
+      where: { telegramId: telegramId.toString() },
+    });
+  }
+
+  async createTelegramUser(userData: { id: number }) {
+    const user = this.userRepository.create({
+      telegramId: userData.id.toString(),
+      // другие поля по умолчанию
+    });
+    return this.userRepository.save(user);
+  }
 }

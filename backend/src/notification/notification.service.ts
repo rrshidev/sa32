@@ -6,11 +6,11 @@ import { CreateNotificationDto } from './dto/create-notification.dto';
 import { EmailAdapter } from './adapters/email/email.adapter';
 import { SmsAdapter } from './adapters/sms/sms.adapter';
 import { TelegramAdapter } from './adapters/telegram/telegram.adapter';
-import { INotificationAdapter } from './interfaces/notification-adapter.interface';
+import { NotificationAdapter } from './interfaces/notification-adapter.interface';
 
 @Injectable()
 export class NotificationService {
-  private adapters: Map<string, INotificationAdapter>;
+  private adapters: Map<string, NotificationAdapter>;
 
   constructor(
     @InjectRepository(Notification)

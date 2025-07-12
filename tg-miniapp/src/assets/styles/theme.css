@@ -1,0 +1,14 @@
+/* src/assets/styles/theme.css */
+:root {
+    /* Основные переменные Telegram */
+    --tg-theme-bg-color: #ffffff;
+    --tg-theme-text-color: #000000;
+    --tg-theme-button-color: #2481cc;
+    --tg-theme-button-text-color: #ffffff;
+    --tg-theme-link-color: #2481cc;
+    --tg-theme-secondary-bg-color: #f4f4f5;
+    
+    /* Дополнительные кастомные переменные */
+    --tg-border-radius: 8px;
+    --tg-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  }
