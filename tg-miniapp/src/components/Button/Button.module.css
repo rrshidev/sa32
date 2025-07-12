@@ -1,0 +1,13 @@
+/* Button.module.css */
+.button {
+    background: var(--tg-theme-button-color);
+    color: var(--tg-theme-button-text-color);
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .button:hover {
+    opacity: 0.9;
+  }

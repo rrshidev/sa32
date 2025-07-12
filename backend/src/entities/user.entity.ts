@@ -20,6 +20,9 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ nullable: true, unique: true })
+  telegramId: string;
+
   @Column({ unique: true })
   email: string;
 
