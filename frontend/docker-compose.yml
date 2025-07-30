@@ -1,0 +1,17 @@
+name: sa32
+
+networks:
+  s32-network:
+    driver: bridge
+    name: s32-network
+
+services:
+  frontend:
+    container_name: sa32-frontend
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - ${EXPOSE_PORT}:3000
+    env_file:
+      - .env

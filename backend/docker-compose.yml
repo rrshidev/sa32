@@ -1,0 +1,49 @@
+name: sa32
+
+networks:
+  s32-network:
+    driver: bridge
+    name: s32-network
+
+volumes:
+  postgres_data:
+
+services:
+  backend:
+    container_name: sa32-backend
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - ${EXPOSE_PORT}:3000
+    env_file:
+      - .env
+    command: node dist/main
+    networks:
+      - s32-network
+  postgres:
+    image: postgres:16.2
+    container_name: sa32-postgres
+    restart: unless-stopped
+
+    command: -p 5432
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_DATABASE}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+    environment:
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+
+    networks:
+      - s32-network
+
+    ports:
+      - ${DB_EXPOSE_PORT}:5432
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ${PWD}/shared/postgres/:/docker-entrypoint-initdb.d/
