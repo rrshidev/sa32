@@ -14,8 +14,8 @@ export class TelegramAdapter {
       'Telegram Bot initialized with token:',
       token.slice(0, 6) + '...',
     );
-    this.setupMiniAppHandlers(); 
-    this.bot.launch();
+    this.setupMiniAppHandlers();
+    void this.bot.launch();
   }
 
   private setupMiniAppHandlers() {
