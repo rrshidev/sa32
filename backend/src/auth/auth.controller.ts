@@ -13,6 +13,7 @@ import { CreateUserDto } from '../user/dto/create-user.dto';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LoginDto } from './dto/login.dto';
 import { parseTelegramData, validateTelegramData } from './telegram.utils';
+import { User } from 'src/entities/user.entity';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -23,21 +24,22 @@ export class AuthController {
   ) {}
 
   @UseGuards(LocalAuthGuard)
+  @Post('register')
+  @ApiOperation({ summary: 'User registration' })
+  @ApiResponse({ status: 201, description: 'User registered' })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  async register(@Body() createUserDto: CreateUserDto) {
+    const user: User = await this.authService.register(createUserDto);
+    return this.authService.login(user);
+  }
   @Post('login')
   @ApiBody({ type: LoginDto })
   @ApiOperation({ summary: 'User login' })
   @ApiResponse({ status: 200, description: 'Successful login' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   login(@Request() req) {
-    return this.authService.login(req.user);
-  }
-
-  @Post('register')
-  @ApiOperation({ summary: 'User registration' })
-  @ApiResponse({ status: 201, description: 'User registered' })
-  @ApiResponse({ status: 400, description: 'Bad request' })
-  async register(@Body() createUserDto: CreateUserDto) {
-    return this.authService.login(createUserDto);
+    const user: User = req.user;
+    return this.authService.login(user);
   }
 
   @Post('telegram')
