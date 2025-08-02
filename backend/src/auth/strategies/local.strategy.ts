@@ -7,13 +7,16 @@ import { User } from 'src/entities/user.entity';
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy) {
   constructor(private authService: AuthService) {
-    super({ usernameField: 'email' }); // Указываем, что используем email вместо username
+    super({
+      usernameField: 'email',
+      passwordField: 'password',
+    });
   }
 
   async validate(email: string, password: string): Promise<User> {
     const user = await this.authService.validateUser(email, password);
     if (!user) {
-      throw new UnauthorizedException('Неверные учетные данные');
+      throw new UnauthorizedException('Invalid credentials');
     }
     return user;
   }

@@ -4,6 +4,7 @@ import { type User } from '../types';
 
 interface AuthContextType {
   user: User | null;
+  register: (email: string, password: string, phone: string, role: 'client' | 'service') => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;

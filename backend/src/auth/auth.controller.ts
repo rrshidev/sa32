@@ -23,14 +23,16 @@ export class AuthController {
     private userService: UserService,
   ) {}
 
-  @UseGuards(LocalAuthGuard)
   @Post('register')
   @ApiOperation({ summary: 'User registration' })
   @ApiResponse({ status: 201, description: 'User registered' })
   @ApiResponse({ status: 400, description: 'Bad request' })
   async register(@Body() createUserDto: CreateUserDto) {
-    const user: User = await this.authService.register(createUserDto);
-    return this.authService.login(user);
+    // Регистрируем пользователя
+    const user = await this.authService.register(createUserDto);
+    // Логиним пользователя и возвращаем токен
+    const { access_token } = await this.authService.login(user);
+    return { access_token };
   }
   @Post('login')
   @ApiBody({ type: LoginDto })
