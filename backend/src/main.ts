@@ -38,13 +38,22 @@ async function bootstrap(): Promise<void> {
   const allowedOrigins = [
     'https://telegram.org',
     'https://web.telegram.org',
+    'http://localhost:5173',
     // configService.get('TELEGRAM_WEBHOOK_URL'),
     'https://nice-oranges-jog.loca.lt', // Ваш локальный tunnel
   ].filter(Boolean);
 
   app.enableCors({
     origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) {
+      // Разрешаем запросы без origin (например, из Postman)
+      if (!origin) return callback(null, true);
+
+      // Проверяем разрешенные домены
+      if (
+        allowedOrigins.includes(origin) ||
+        origin.startsWith('http://localhost:') || // Разрешаем все локальные адреса
+        origin.includes('your-production-domain.com') // Ваш продакшн домен
+      ) {
         callback(null, true);
       } else {
         console.warn('Blocked CORS for origin:', origin);
@@ -53,6 +62,7 @@ async function bootstrap(): Promise<void> {
     },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
+    allowedHeaders: 'Content-Type,Authorization',
   });
 
   // ===== 2. Настройка валидации =====

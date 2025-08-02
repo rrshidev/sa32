@@ -20,8 +20,8 @@ export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ nullable: true, unique: true })
-  telegramId: string;
+  @Column({ nullable: true, type: 'varchar' })
+  telegramId: string | null;
 
   @Column({ unique: true })
   email: string;

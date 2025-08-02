@@ -59,6 +59,13 @@ const LoginPage = () => {
           >
             Войти
           </Button>
+          <Button
+            fullWidth
+            sx={{ mt: 2 }}
+            onClick={() => navigate('/register')}
+          >
+            Нет аккаунта? Зарегистрироваться
+        </Button>
         </Box>
       </Paper>
     </Container>

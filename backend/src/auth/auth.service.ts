@@ -33,11 +33,18 @@ export class AuthService {
     };
   }
 
-  async register(userData: CreateUserDto) {
+  async register(userData: CreateUserDto): Promise<User> {
     const hashedPassword = await bcrypt.hash(userData.password, 10);
+
     return this.userService.create({
-      ...userData,
+      email: userData.email,
       password: hashedPassword,
+      phone: userData.phone,
+      role: userData.role,
+      // Остальные поля инициализируем как null
+      telegramId: undefined,
+      clientProfile: undefined,
+      serviceProfile: undefined,
     });
   }
 }

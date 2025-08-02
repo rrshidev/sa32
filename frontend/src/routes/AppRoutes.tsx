@@ -1,46 +1,31 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
 import LoginPage from '../pages/LoginPage';
-import DashboardPage from '../pages/DashBoardPage';
-import AppointmentsPage from '../pages/appointments/AppointmentsPage';
-import CreateAppointmentPage from '../pages/appointments/CreateAppointmentPage';
-import GaragePage from '../pages/garage/GaragePage';
-import ServicesPage from '../pages/services/ServicesPage';
-import ProfilePage from '../pages/ProfilePage';
+import RegisterPage from '../pages/RegisterPage';
+import ProtectedRoute from './ProtectedRoute';
+import HomePage from '../pages/DashBoardPage';
+import { useAuth } from '../contexts/AuthContext';
 
 const AppRoutes = () => {
   const { isAuthenticated } = useAuth();
 
   return (
     <Routes>
-      <Route
-        path="/login"
-        element={isAuthenticated ? <Navigate to="/" /> : <LoginPage />}
-      />
+      {/* Публичные маршруты */}
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
+
+      {/* Защищенные маршруты */}
       <Route
         path="/"
-        element={isAuthenticated ? <DashboardPage /> : <Navigate to="/login" />}
+        element={
+          <ProtectedRoute isAllowed={isAuthenticated} redirectTo="/login">
+            <HomePage />
+          </ProtectedRoute>
+        }
       />
-      <Route
-        path="/appointments"
-        element={isAuthenticated ? <AppointmentsPage /> : <Navigate to="/login" />}
-      />
-      <Route
-        path="/appointments/new"
-        element={isAuthenticated ? <CreateAppointmentPage /> : <Navigate to="/login" />}
-      />
-      <Route
-        path="/garage"
-        element={isAuthenticated ? <GaragePage /> : <Navigate to="/login" />}
-      />
-      <Route
-        path="/services"
-        element={isAuthenticated ? <ServicesPage /> : <Navigate to="/login" />}
-      />
-      <Route
-        path="/profile"
-        element={isAuthenticated ? <ProfilePage /> : <Navigate to="/login" />}
-      />
+
+      {/* Перенаправление для неизвестных маршрутов */}
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 };
