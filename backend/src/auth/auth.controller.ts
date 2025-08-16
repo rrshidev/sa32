@@ -16,7 +16,7 @@ import { parseTelegramData, validateTelegramData } from './telegram.utils';
 import { User } from 'src/entities/user.entity';
 
 @ApiTags('Auth')
-@Controller('api/auth')
+@Controller('auth')
 export class AuthController {
   constructor(
     private authService: AuthService,
