@@ -10,7 +10,7 @@ import { ClientProfile } from '../entities/client-profile.entity';
 import { ServiceProfile } from '../entities/service-profile.entity';
 import * as bcrypt from 'bcrypt';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { CreateUserDto } from 'src/auth/dto/create-user.dto';
+import { CreateUserDto } from './dto/create-user.dto';
 
 @Injectable()
 export class UserService {

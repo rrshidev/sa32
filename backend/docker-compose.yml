@@ -15,10 +15,17 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - ${EXPOSE_PORT}:3000
-    env_file:
-      - .env
+      - "3000:3000"
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5435
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_DATABASE=postgres
+      - NODE_ENV=development
     command: node dist/main
+    depends_on:
+      - postgres
     networks:
       - s32-network
   postgres:
@@ -26,23 +33,24 @@ services:
     container_name: sa32-postgres
     restart: unless-stopped
 
-    command: -p 5432
+    command: -p 5435
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_DATABASE}" ]
-      interval: 5s
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d postgres -p 5435" ]
+      interval: 10s
       timeout: 5s
-      retries: 10
+      retries: 5
+      start_period: 30s
 
     environment:
-      POSTGRES_DB: ${DB_DATABASE}
-      POSTGRES_USER: ${DB_USERNAME}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
 
     networks:
       - s32-network
 
     ports:
-      - ${DB_EXPOSE_PORT}:5432
+      - "5435:5435"
 
     volumes:
       - postgres_data:/var/lib/postgresql/data

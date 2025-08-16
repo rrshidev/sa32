@@ -33,7 +33,7 @@ export class AppointmentController {
   @ApiOperation({ summary: 'Create new appointment' })
   @ApiResponse({ status: 201, description: 'Appointment created' })
   async create(@Req() req, @Body() createDto: CreateAppointmentDto) {
-    return this.appointmentService.createAppointment(req.user.sub, createDto);
+    return this.appointmentService.create(createDto, req.user.sub);
   }
 
   @Get('available-slots')
@@ -43,7 +43,7 @@ export class AppointmentController {
     @Query('serviceId') serviceId: string,
     @Query('date') date: string,
   ) {
-    return this.appointmentService.findAvailableSlots(
+    return this.appointmentService.getAvailableSlots(
       serviceId,
       new Date(date),
     );
@@ -53,17 +53,14 @@ export class AppointmentController {
   @ApiOperation({ summary: 'Get user appointments' })
   @ApiResponse({ status: 200, description: 'List of appointments' })
   async getUserAppointments(@Req() req) {
-    return this.appointmentService.getUserAppointments(req.user.sub);
+    return this.appointmentService.findAll({ carId: req.user.sub });
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Cancel appointment' })
   @ApiResponse({ status: 200, description: 'Appointment canceled' })
   async cancelAppointment(@Req() req, @Param('id') appointmentId: string) {
-    return this.appointmentService.cancelAppointment(
-      req.user.sub,
-      appointmentId,
-    );
+    return this.appointmentService.remove(appointmentId);
   }
 
   @Patch(':id')
@@ -74,11 +71,7 @@ export class AppointmentController {
     @Param('id') id: string,
     @Body() updateDto: UpdateAppointmentDto,
   ) {
-    return this.appointmentService.updateAppointment(
-      req.user.sub,
-      id,
-      updateDto,
-    );
+    return this.appointmentService.update(id, updateDto);
   }
 
   @Get('service/:serviceId')
@@ -88,6 +81,6 @@ export class AppointmentController {
     @Param('serviceId') serviceId: string,
     @Query() filter: AppointmentFilter,
   ) {
-    return this.appointmentService.getServiceAppointments(serviceId, filter);
+    return this.appointmentService.getAppointmentsByService(serviceId);
   }
 }
