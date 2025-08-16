@@ -5,7 +5,7 @@ import { Notification } from '../entities/notification.entity';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { EmailAdapter } from './adapters/email/email.adapter';
 import { SmsAdapter } from './adapters/sms/sms.adapter';
-import { TelegramAdapter } from './adapters/telegram/telegram.adapter';
+// import { TelegramAdapter } from './adapters/telegram/telegram.adapter';
 import { NotificationAdapter } from './interfaces/notification-adapter.interface';
 
 @Injectable()
@@ -17,12 +17,12 @@ export class NotificationService {
     private notificationRepo: Repository<Notification>,
     private emailAdapter: EmailAdapter,
     private smsAdapter: SmsAdapter,
-    private telegramAdapter: TelegramAdapter,
+    // private telegramAdapter: TelegramAdapter, // Временно отключен
   ) {
     this.adapters = new Map([
       ['email', this.emailAdapter],
       ['sms', this.smsAdapter],
-      ['telegram', this.telegramAdapter],
+      // ['telegram', this.telegramAdapter], // Временно отключен
     ]);
   }
 

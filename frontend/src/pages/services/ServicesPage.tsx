@@ -43,13 +43,13 @@ const ServicesPage = () => {
     fetchData();
   }, []);
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
   };
 
   const filteredServices = activeTab === 0 
-    ? services 
-    : services.filter(service => service.category?.id === categories[activeTab - 1]?.id);
+    ? services.filter(service => service.category?.name === 'Техническое обслуживание')
+    : services.filter(service => service.category?.name === 'Ремонт');
 
   return (
     <Box sx={{ 

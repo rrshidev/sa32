@@ -16,7 +16,7 @@ import { parseTelegramData, validateTelegramData } from './telegram.utils';
 import { User } from 'src/entities/user.entity';
 
 @ApiTags('Auth')
-@Controller('auth')
+@Controller('api/auth')
 export class AuthController {
   constructor(
     private authService: AuthService,
@@ -35,11 +35,12 @@ export class AuthController {
     return { access_token };
   }
   @Post('login')
+  @UseGuards(LocalAuthGuard)
   @ApiBody({ type: LoginDto })
   @ApiOperation({ summary: 'User login' })
   @ApiResponse({ status: 200, description: 'Successful login' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  login(@Request() req) {
+  login(@Request() req: Request & { user: User }) {
     const user: User = req.user;
     return this.authService.login(user);
   }

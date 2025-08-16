@@ -1,23 +1,25 @@
 import { useState, useEffect } from 'react';
-import {
-  Container,
-  Typography,
-  Button,
-  List,
-  ListItem,
-  ListItemText,
+import { 
+  Typography, 
+  Box, 
+  Paper, 
+  Button, 
+  List, 
+  ListItem, 
+  ListItemText, 
   IconButton,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   TextField,
-  Paper,
-  Box
+  Container,
+  Alert,
+  CircularProgress
 } from '@mui/material';
 import { Add, Edit, Delete } from '@mui/icons-material';
 import apiClient from '../../api/apiClient';
-import { type Car } from '../../types';
+import type { Car } from '../../types';
 
 const GaragePage = () => {
   const [cars, setCars] = useState<Car[]>([]);

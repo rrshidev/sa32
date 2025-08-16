@@ -1,18 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, Repository, In } from 'typeorm';
+import { Repository, Between, LessThanOrEqual, MoreThanOrEqual } from 'typeorm';
 import { Appointment, AppointmentStatus } from '../entities/appointment.entity';
+import { User } from '../entities/user.entity';
+import { Car } from '../entities/car.entity';
 import { Service } from '../entities/service.entity';
 import { Master } from '../entities/master.entity';
-import { CreateAppointmentDto } from './dto/create-appointment.dto';
-import * as dateFns from 'date-fns';
+// import { NotificationService } from '../notification/notification.service'; // Временно отключен
 import { AvailableSlot } from './interfaces/available-slot.interface';
-import { NotificationService } from '../notification/notification.service';
-import {
-  NotificationChannel,
-  NotificationType,
-} from '../entities/notification.entity';
-import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 import { AppointmentFilter } from './interfaces/appointment-filter.interface';
 
 @Injectable()
@@ -20,318 +15,227 @@ export class AppointmentService {
   constructor(
     @InjectRepository(Appointment)
     private appointmentRepo: Repository<Appointment>,
+    @InjectRepository(User)
+    private userRepo: Repository<User>,
+    @InjectRepository(Car)
+    private carRepo: Repository<Car>,
     @InjectRepository(Service)
     private serviceRepo: Repository<Service>,
     @InjectRepository(Master)
     private masterRepo: Repository<Master>,
-    private notificationService: NotificationService,
+    // private notificationService: NotificationService, // Временно отключен
   ) {}
 
-  async createAppointment(userId: string, createDto: CreateAppointmentDto) {
-    const service = await this.serviceRepo.findOne({
-      where: { id: createDto.serviceId },
-      relations: ['serviceProfile', 'category'],
-    });
+  async create(createDto: any, userId: string): Promise<Appointment> {
+    // Проверяем существование пользователя
+    const user = await this.userRepo.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
 
-    if (!service) throw new NotFoundException('Service not found');
+    // Проверяем существование автомобиля
+    const car = await this.carRepo.findOne({ where: { id: createDto.carId } });
+    if (!car) {
+      throw new NotFoundException('Car not found');
+    }
 
-    const endTime = dateFns.addMinutes(
-      new Date(createDto.startTime),
-      service.durationMinutes,
-    );
+    // Проверяем существование услуги
+    const service = await this.serviceRepo.findOne({ where: { id: createDto.serviceId } });
+    if (!service) {
+      throw new NotFoundException('Service not found');
+    }
 
-    // Проверка доступности мастера
+    // Проверяем существование мастера (если указан)
+    let master: Master | null = null;
     if (createDto.masterId) {
-      const isAvailable = await this.isMasterAvailable(
-        createDto.masterId,
-        new Date(createDto.startTime),
-        endTime,
-      );
-      if (!isAvailable) {
-        throw new NotFoundException('Master is not available at this time');
+      master = await this.masterRepo.findOne({ where: { id: createDto.masterId } });
+      if (!master) {
+        throw new NotFoundException('Master not found');
       }
     }
 
+    // Создаем запись
     const appointment = this.appointmentRepo.create({
-      startTime: createDto.startTime,
-      endTime,
-      car: { id: createDto.carId, owner: { user: { id: userId } } },
-      service: { id: createDto.serviceId },
-      master: createDto.masterId ? { id: createDto.masterId } : null,
+      startTime: new Date(createDto.startTime),
+      endTime: new Date(createDto.startTime.getTime() + service.durationMinutes * 60000),
+      status: AppointmentStatus.PENDING,
       notes: createDto.notes,
-      status: AppointmentStatus.CONFIRMED,
+      car,
+      service,
+      master,
     });
 
-    const savedAppointment = await this.appointmentRepo.save(appointment);
+    const saved = await this.appointmentRepo.save(appointment);
 
-    // Отправка уведомления
-    await this.notificationService.createAndSend({
-      userId: userId,
-      type: NotificationType.APPOINTMENT,
-      channel: NotificationChannel.EMAIL,
-      title: 'Новая запись в автосервис',
-      content: `Вы записаны на ${service.name} ${new Date(createDto.startTime).toLocaleString()}`,
-      metadata: {
-        appointmentId: savedAppointment.id,
-        serviceId: service.id,
-      },
-    });
+    // Отправляем уведомление (временно отключено)
+    // await this.notificationService.createAndSend({
+    //   type: 'appointment',
+    //   channel: 'email',
+    //   userId: userId,
+    //   title: 'Новая запись',
+    //   content: `Ваша запись на ${service.name} подтверждена`,
+    //   metadata: { appointmentId: saved.id },
+    // });
 
-    return savedAppointment;
+    return saved;
   }
 
-  async getServiceAppointments(serviceId: string, filter: AppointmentFilter) {
-    const where: any = { service: { id: serviceId } };
+  async findAll(filters?: AppointmentFilter): Promise<Appointment[]> {
+    const queryBuilder = this.appointmentRepo
+      .createQueryBuilder('appointment')
+      .leftJoinAndSelect('appointment.car', 'car')
+      .leftJoinAndSelect('appointment.service', 'service')
+      .leftJoinAndSelect('appointment.master', 'master')
+      .leftJoinAndSelect('car.owner', 'owner');
 
-    if (filter.status) {
-      where.status = filter.status;
+    if (filters?.carId) {
+      queryBuilder.andWhere('car.id = :carId', { carId: filters.carId });
     }
 
-    if (filter.fromDate && filter.toDate) {
-      where.startTime = Between(
-        new Date(filter.fromDate),
-        new Date(filter.toDate),
+    if (filters?.status) {
+      queryBuilder.andWhere('appointment.status = :status', { status: filters.status });
+    }
+
+    if (filters?.fromDate && filters?.toDate) {
+      queryBuilder.andWhere(
+        'appointment.startTime BETWEEN :fromDate AND :toDate',
+        { fromDate: filters.fromDate, toDate: filters.toDate }
       );
     }
 
-    return this.appointmentRepo.find({
-      where,
-      relations: ['car', 'master', 'service'],
-      order: { startTime: 'ASC' },
-      take: filter.limit,
-      skip: filter.offset,
-    });
+    if (filters?.serviceId) {
+      queryBuilder.andWhere('service.id = :serviceId', { serviceId: filters.serviceId });
+    }
+
+    return queryBuilder.getMany();
   }
 
-  async updateAppointment(
-    userId: string,
-    appointmentId: string,
-    updateDto: UpdateAppointmentDto,
-  ) {
-    // 1. Находим запись с проверкой владельца
+  async findOne(id: string): Promise<Appointment> {
     const appointment = await this.appointmentRepo.findOne({
-      where: {
-        id: appointmentId,
-        car: { owner: { user: { id: userId } } },
-      },
-      relations: ['service'], // Добавляем если нужно для уведомлений
+      where: { id },
+      relations: ['car', 'service', 'master', 'car.owner'],
     });
 
     if (!appointment) {
-      throw new NotFoundException('Appointment not found or access denied');
+      throw new NotFoundException('Appointment not found');
     }
 
-    // 2. Обновляем только разрешенные поля
-    const updatedAppointment = {
-      ...appointment,
-      ...updateDto,
-      // Явно приводим типы если нужно
-      status: updateDto.status as AppointmentStatus,
-    };
+    return appointment;
+  }
 
-    // 3. Сохраняем обновленную запись
-    const result = await this.appointmentRepo.save(updatedAppointment);
+  async update(id: string, updateDto: any): Promise<Appointment> {
+    const appointment = await this.findOne(id);
 
-    // 4. Отправляем уведомление если статус изменился
-    if (updateDto.status && updateDto.status !== appointment.status) {
-      await this.notificationService.createAndSend({
-        userId,
-        type: NotificationType.APPOINTMENT,
-        channel: NotificationChannel.EMAIL,
-        title: `Статус записи изменен на ${updateDto.status}`,
-        content: `Ваша запись на ${appointment.service.name} теперь имеет статус: ${updateDto.status}`,
-        metadata: {
-          appointmentId: result.id,
-          newStatus: updateDto.status,
-        },
+    // Обновляем поля
+    if (updateDto.status !== undefined) {
+      appointment.status = updateDto.status;
+    }
+
+    if (updateDto.masterId !== undefined) {
+      if (updateDto.masterId === null) {
+        appointment.master = null;
+      } else {
+        const master = await this.masterRepo.findOne({ where: { id: updateDto.masterId } });
+        if (!master) {
+          throw new NotFoundException('Master not found');
+        }
+        appointment.master = master;
+      }
+    }
+
+    if (updateDto.notes !== undefined) {
+      appointment.notes = updateDto.notes;
+    }
+
+    if (updateDto.cancellationReason !== undefined) {
+      appointment.cancellationReason = updateDto.cancellationReason;
+    }
+
+    const saved = await this.appointmentRepo.save(appointment);
+
+    // Отправляем уведомление об изменении (временно отключено)
+    // await this.notificationService.createAndSend({
+    //   type: 'appointment',
+    //   channel: 'email',
+    //   userId: appointment.car.owner.id,
+    //   title: 'Запись изменена',
+    //   content: `Ваша запись на ${appointment.service.name} была изменена`,
+    //   metadata: { appointmentId: saved.id },
+    // });
+
+    return saved;
+  }
+
+  async remove(id: string): Promise<void> {
+    const appointment = await this.findOne(id);
+    await this.appointmentRepo.remove(appointment);
+
+    // Отправляем уведомление об отмене (временно отключено)
+    // await this.notificationService.createAndSend({
+    //   type: 'appointment',
+    //   channel: 'email',
+    //   userId: appointment.car.owner.id,
+    //   title: 'Запись отменена',
+    //   content: `Ваша запись на ${appointment.service.name} была отменена`,
+    //   metadata: { appointmentId: id },
+    // });
+  }
+
+  async getAvailableSlots(serviceId: string, date: Date): Promise<AvailableSlot[]> {
+    const service = await this.serviceRepo.findOne({ where: { id: serviceId } });
+    if (!service) {
+      throw new NotFoundException('Service not found');
+    }
+
+    // Получаем все записи на указанную дату
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const existingAppointments = await this.appointmentRepo.find({
+      where: {
+        startTime: Between(startOfDay, endOfDay),
+        service: { id: serviceId },
+      },
+    });
+
+    // Генерируем временные слоты (например, каждый час)
+    const slots: AvailableSlot[] = [];
+    const workStartHour = 9; // 9:00
+    const workEndHour = 18; // 18:00
+
+    for (let hour = workStartHour; hour < workEndHour; hour++) {
+      const slotStart = new Date(date);
+      slotStart.setHours(hour, 0, 0, 0);
+      const slotEnd = new Date(slotStart.getTime() + service.durationMinutes * 60000);
+
+      // Проверяем, доступен ли слот
+      const isAvailable = !existingAppointments.some(appointment => {
+        const appointmentStart = new Date(appointment.startTime);
+        const appointmentEnd = new Date(appointment.endTime);
+        return (
+          (slotStart >= appointmentStart && slotStart < appointmentEnd) ||
+          (slotEnd > appointmentStart && slotEnd <= appointmentEnd) ||
+          (slotStart <= appointmentStart && slotEnd >= appointmentEnd)
+        );
+      });
+
+      slots.push({
+        start: slotStart,
+        end: slotEnd,
+        masterId: undefined,
+        masterName: undefined,
       });
     }
 
-    return result;
-  }
-
-  async findAvailableSlots(
-    serviceId: string,
-    date: Date,
-  ): Promise<AvailableSlot[]> {
-    const service = await this.serviceRepo.findOne({
-      where: { id: serviceId },
-      relations: ['serviceProfile', 'serviceProfile.masters', 'category'],
-    });
-
-    if (!service) throw new NotFoundException('Service not found');
-
-    const dayStart = dateFns.startOfDay(date);
-    const dayEnd = dateFns.endOfDay(date);
-
-    // Получаем все записи для этого сервиса и мастеров на выбранный день
-    const existingAppointments = await this.appointmentRepo.find({
-      where: {
-        service: { id: serviceId },
-        startTime: Between(dayStart, dayEnd),
-        status: In(['confirmed', 'pending']),
-      },
-      relations: ['master'],
-    });
-
-    // Получаем всех мастеров, которые могут выполнять эту услугу
-    const availableMasters = service.serviceProfile.masters.filter(
-      (master) =>
-        master.specialization === service.category.name ||
-        master.specialization === 'universal',
-    );
-
-    // Если нет мастеров - возвращаем общие слоты без привязки к мастерам
-    if (availableMasters.length === 0) {
-      return this.generateGeneralSlots(
-        date,
-        service.durationMinutes,
-        existingAppointments,
-      );
-    }
-
-    // Генерируем слоты для каждого мастера
-    const slots: AvailableSlot[] = [];
-    for (const master of availableMasters) {
-      const masterSlots = this.generateMasterSlots(
-        date,
-        service.durationMinutes,
-        master,
-        existingAppointments.filter((app) => app.master?.id === master.id),
-      );
-      slots.push(...masterSlots);
-    }
-
     return slots;
   }
 
-  private async isMasterAvailable(
-    masterId: string,
-    startTime: Date,
-    endTime: Date,
-  ): Promise<boolean> {
-    const conflictingAppointments = await this.appointmentRepo.count({
-      where: {
-        master: { id: masterId },
-        startTime: Between(startTime, endTime),
-        status: In(['confirmed', 'pending']),
-      },
-    });
-
-    return conflictingAppointments === 0;
-  }
-
-  private generateGeneralSlots(
-    date: Date,
-    durationMinutes: number,
-    existingAppointments: Appointment[],
-  ): AvailableSlot[] {
-    const slots: AvailableSlot[] = [];
-    let currentTime = dateFns.setHours(date, 9); // Начало рабочего дня (9:00)
-
-    while (currentTime < dateFns.setHours(date, 18)) {
-      // Конец рабочего дня (18:00)
-      const slotEnd = dateFns.addMinutes(currentTime, durationMinutes);
-
-      const isAvailable = !existingAppointments.some(
-        (app) =>
-          dateFns.isWithinInterval(currentTime, {
-            start: app.startTime,
-            end: app.endTime,
-          }) ||
-          dateFns.isWithinInterval(slotEnd, {
-            start: app.startTime,
-            end: app.endTime,
-          }),
-      );
-
-      if (isAvailable) {
-        slots.push({
-          start: currentTime,
-          end: slotEnd,
-        });
-      }
-
-      currentTime = dateFns.addMinutes(currentTime, 30); // Шаг расписания (30 минут)
-    }
-
-    return slots;
-  }
-
-  private generateMasterSlots(
-    date: Date,
-    durationMinutes: number,
-    master: Master,
-    masterAppointments: Appointment[],
-  ): AvailableSlot[] {
-    const slots: AvailableSlot[] = [];
-    let currentTime = dateFns.setHours(date, master.workStartHour || 9); // Начало рабочего дня мастера
-    const workEndHour = master.workEndHour || 18;
-
-    while (currentTime < dateFns.setHours(date, workEndHour)) {
-      const slotEnd = dateFns.addMinutes(currentTime, durationMinutes);
-
-      const isAvailable = !masterAppointments.some(
-        (app) =>
-          dateFns.isWithinInterval(currentTime, {
-            start: app.startTime,
-            end: app.endTime,
-          }) ||
-          dateFns.isWithinInterval(slotEnd, {
-            start: app.startTime,
-            end: app.endTime,
-          }),
-      );
-
-      if (isAvailable) {
-        slots.push({
-          start: currentTime,
-          end: slotEnd,
-          masterId: master.id,
-          masterName: `${master.firstName} ${master.lastName}`,
-          // specialization: master.specialization,
-        });
-      }
-
-      currentTime = dateFns.addMinutes(currentTime, 30); // Шаг расписания
-    }
-
-    return slots;
-  }
-
-  async getUserAppointments(userId: string) {
+  async getAppointmentsByService(serviceId: string): Promise<Appointment[]> {
     return this.appointmentRepo.find({
-      where: { car: { owner: { user: { id: userId } } } },
-      relations: ['service', 'master', 'car', 'service.category'],
-      order: { startTime: 'ASC' },
+      where: { service: { id: serviceId } },
+      relations: ['car', 'service', 'master', 'car.owner'],
     });
-  }
-
-  async cancelAppointment(userId: string, appointmentId: string) {
-    const appointment = await this.appointmentRepo.findOne({
-      where: {
-        id: appointmentId,
-        car: { owner: { user: { id: userId } } },
-      },
-    });
-
-    if (!appointment) throw new NotFoundException('Appointment not found');
-
-    appointment.status = AppointmentStatus.CANCELLED;
-    await this.appointmentRepo.save(appointment);
-
-    // Уведомление об отмене
-    await this.notificationService.createAndSend({
-      userId: userId,
-      type: NotificationType.APPOINTMENT,
-      channel: NotificationChannel.EMAIL,
-      title: 'Запись отменена',
-      content: `Ваша запись на ${appointment.service.name} отменена`,
-      metadata: {
-        appointmentId: appointment.id,
-      },
-    });
-
-    return appointment;
   }
 }

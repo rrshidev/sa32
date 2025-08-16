@@ -34,38 +34,22 @@ async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
 
-  // ===== 1. Настройка CORS для Telegram Mini App =====
-  const allowedOrigins = [
-    'https://telegram.org',
-    'https://web.telegram.org',
-    'http://localhost:5173',
-    // configService.get('TELEGRAM_WEBHOOK_URL'),
-    'https://nice-oranges-jog.loca.lt', // Ваш локальный tunnel
-  ].filter(Boolean);
+  // ===== 1. Настройка глобального префикса API =====
+  app.setGlobalPrefix('api');
 
+  // ===== 2. Настройка CORS для фронтенда =====
   app.enableCors({
-    origin: (origin, callback) => {
-      // Разрешаем запросы без origin (например, из Postman)
-      if (!origin) return callback(null, true);
-
-      // Проверяем разрешенные домены
-      if (
-        allowedOrigins.includes(origin) ||
-        origin.startsWith('http://localhost:') || // Разрешаем все локальные адреса
-        origin.includes('your-production-domain.com') // Ваш продакшн домен
-      ) {
-        callback(null, true);
-      } else {
-        console.warn('Blocked CORS for origin:', origin);
-        callback(new Error('Not allowed by CORS'));
-      }
-    },
+    origin: [
+      'http://localhost:5173', // Vite dev server
+      'http://localhost:3001', // Docker frontend
+      'http://localhost:3000', // Docker frontend fallback
+    ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    credentials: true,
+    credentials: false, // Изменено на false для решения CORS проблем
     allowedHeaders: 'Content-Type,Authorization',
   });
 
-  // ===== 2. Настройка валидации =====
+  // ===== 3. Настройка валидации =====
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -74,7 +58,7 @@ async function bootstrap(): Promise<void> {
     }),
   );
 
-  // ===== 3. Настройка Swagger =====
+  // ===== 4. Настройка Swagger =====
   const config = new DocumentBuilder()
     .setTitle('SA32 API')
     .setDescription('API для сервиса записи в автосервисы')
@@ -96,10 +80,10 @@ async function bootstrap(): Promise<void> {
     },
   });
 
-  // ===== 4. Настройка для работы с WebApp =====
+  // ===== 5. Настройка для работы с WebApp =====
   app.use('/webapp', express.static(join(__dirname, '..', 'public')));
 
-  // ===== 5. Запуск сервера =====
+  // ===== 6. Запуск сервера =====
   const port = configService.get<number>('APP_PORT') || 3000;
   await app.listen(port);
 
@@ -107,7 +91,8 @@ async function bootstrap(): Promise<void> {
   =====================================================
   🚀 Server started on port ${port}
   📄 Swagger: http://localhost:${port}/api
-  🤖 Telegram WebApp URL: ${configService.get('TELEGRAM_WEBHOOK_URL')}
+  🌐 CORS enabled for: localhost:5173, localhost:3001
+  🔗 API prefix: /api
   =====================================================
   `);
 }

@@ -10,6 +10,6 @@ import { UserModule } from '../user/user.module';
   imports: [TypeOrmModule.forFeature([Car, ClientProfile]), UserModule],
   providers: [GarageService],
   controllers: [GarageController],
-  exports: [GarageService],
+  exports: [GarageService, TypeOrmModule],
 })
 export class GarageModule {}

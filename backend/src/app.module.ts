@@ -1,30 +1,3 @@
-// import { Module, forwardRef } from '@nestjs/common';
-// import { ConfigModule } from '@nestjs/config';
-// import { DatabaseModule } from './database/database.module';
-// import { UserModule } from './user/user.module';
-// import { GarageModule } from './garage/garage.module';
-// import { AppointmentModule } from './appointment/appointment.module';
-// import { AuthModule } from './auth/auth.module';
-// import { NotificationModule } from './notification/notification.module';
-// import { ServiceModule } from './service/service.module';
-// import { AppController } from './app.controller';
-// import { AppService } from './app.service';
-
-// @Module({
-//   imports: [
-//     ConfigModule.forRoot({ isGlobal: true }),
-//     DatabaseModule,
-//     forwardRef(() => UserModule),
-//     GarageModule,
-//     AppointmentModule,
-//     forwardRef(() => AuthModule),
-//     NotificationModule,
-//     ServiceModule,
-//   ],
-//   controllers: [AppController],
-//   providers: [AppService],
-// })
-// export class AppModule {}
 // app.module.ts
 import { Module } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
@@ -32,16 +5,38 @@ import { UserModule } from './user/user.module';
 import { DatabaseModule } from './database/database.module';
 import { ConfigModule } from '@nestjs/config';
 import * as path from 'path';
+import { AppointmentModule } from './appointment/appointment.module';
+import { GarageModule } from './garage/garage.module';
+import { ServiceModule } from './service/service.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      envFilePath: path.resolve(__dirname, '../../.env'),
+      envFilePath: [
+        path.resolve(
+          __dirname,
+          `../.env.${process.env.NODE_ENV ?? 'development'}`,
+        ),
+        path.resolve(__dirname, '../.env'),
+      ],
       isGlobal: true,
+      load: [() => {
+        console.log('Loading environment variables...');
+        console.log('NODE_ENV:', process.env.NODE_ENV);
+        console.log('DB_HOST:', process.env.DB_HOST);
+        console.log('DB_PORT:', process.env.DB_PORT);
+        console.log('DB_USERNAME:', process.env.DB_USERNAME);
+        console.log('DB_PASSWORD:', process.env.DB_PASSWORD);
+        console.log('DB_DATABASE:', process.env.DB_DATABASE);
+        return {};
+      }],
     }),
     DatabaseModule,
     UserModule,
     AuthModule,
+    AppointmentModule,
+    GarageModule,
+    ServiceModule,
   ],
 })
 export class AppModule {}
