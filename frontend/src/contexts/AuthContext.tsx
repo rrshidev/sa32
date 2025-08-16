@@ -25,7 +25,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const loadUser = async () => {
     try {
-      const response = await apiClient.get('/api/user/me');
+      const response = await apiClient.get('/user/me');
       setUser(response.data);
     } catch (error) {
       console.error('Failed to load user', error);
@@ -34,7 +34,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const register = async (email: string, password: string, phone: string, role: 'client' | 'service') => {
-    const response = await apiClient.post('/api/auth/register', {
+    const response = await apiClient.post('/auth/register', {
       email,
       password,
       phone,
@@ -45,7 +45,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const login = async (email: string, password: string) => {
-    const response = await apiClient.post('/api/auth/login', { email, password });
+    const response = await apiClient.post('/auth/login', { email, password });
     localStorage.setItem('authToken', response.data.access_token);
     await loadUser();
   };
