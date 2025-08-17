@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Paper, 
-  Card, 
-  CardContent, 
+import {
+  Box,
+  Typography,
+  Paper,
+  Card,
+  CardContent,
   CircularProgress,
   List,
   ListItem,
@@ -12,11 +12,12 @@ import {
   Divider
 } from '@mui/material';
 import apiClient from '../api/apiClient';
-import { type Appointment, type Car } from '../types';
+import { type Appointment, type Car, type Service } from '../types';
 
 const DashboardPage = () => {
   const [upcomingAppointments, setUpcomingAppointments] = useState<Appointment[]>([]);
   const [cars, setCars] = useState<Car[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
   const [stats, setStats] = useState({
     totalAppointments: 0,
     completedAppointments: 0,
@@ -28,14 +29,16 @@ const DashboardPage = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        
-        const [appointmentsRes, carsRes] = await Promise.all([
+
+        const [appointmentsRes, carsRes, servicesRes] = await Promise.all([
           apiClient.get('/appointment?limit=3&sort=startTime:asc'),
-          apiClient.get('/garage/cars')
+          apiClient.get('/garage/cars'),
+          apiClient.get('/services')
         ]);
 
         setUpcomingAppointments(appointmentsRes.data);
         setCars(carsRes.data);
+        setServices(servicesRes.data);
 
         const statsRes = await apiClient.get('/appointment/stats');
         setStats(statsRes.data);
@@ -156,7 +159,7 @@ const DashboardPage = () => {
         </Box>
 
         {/* Блок записей */}
-        <Box sx={{ 
+        <Box sx={{
           flex: 1,
           minWidth: { xs: '100%', md: '300px', lg: '350px' }
         }}>
@@ -201,6 +204,30 @@ const DashboardPage = () => {
                   Нет предстоящих записей
                 </Typography>
               )}
+            </CardContent>
+          </Card>
+        </Box>
+
+        {/* Блок автосервисов */}
+        <Box sx={{
+          flex: 1,
+          minWidth: { xs: '100%', md: '300px', lg: '350px' }
+        }}>
+          <Card>
+            <CardContent>
+              <Typography variant="h6" gutterBottom>
+                Автосервисы ({services.length})
+              </Typography>
+              <List dense>
+                {services.map((service) => (
+                  <ListItem key={service.id}>
+                    <ListItemText
+                      primary={service.name}
+                      secondary={`Категория: ${service.category?.name}`}
+                    />
+                  </ListItem>
+                ))}
+              </List>
             </CardContent>
           </Card>
         </Box>
