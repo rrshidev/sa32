@@ -2,10 +2,11 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from '../pages/LoginPage';
 import RegisterPage from '../pages/RegisterPage';
 import ProtectedRoute from './ProtectedRoute';
-import HomePage from '../pages/DashBoardPage';
+import HomePage from '../pages/HomePage';
 import ProfilePage from '../pages/ProfilePage';
 import GaragePage from '../pages/garage/GaragePage';
 import { useAuth } from '../contexts/AuthContext';
+import ServiceListPage from '../pages/services/ServiceListPage';
 
 const AppRoutes = () => {
   const { isAuthenticated } = useAuth();
@@ -22,6 +23,14 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute isAllowed={isAuthenticated} redirectTo="/login">
             <HomePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/services"
+        element={
+          <ProtectedRoute isAllowed={isAuthenticated} redirectTo="/login">
+            <ServiceListPage />
           </ProtectedRoute>
         }
       />

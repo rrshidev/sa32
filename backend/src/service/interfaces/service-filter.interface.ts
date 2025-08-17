@@ -5,4 +5,6 @@ export interface ServiceFilter {
   searchQuery?: string;
   limit?: number;
   offset?: number;
+  dateAt?: string; // ISO date string
+  dateTo?: string; // ISO date string
 }
