@@ -31,8 +31,11 @@ const RegisterPage = () => {
   };
 
   return (
-    <Container maxWidth="xs">
-      <Paper elevation={3} sx={{ p: 4, mt: 8 }}>
+<Container maxWidth="xs" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+      <Box sx={{ position: 'absolute', top: 16, left: 16 }}>
+        <img src="/logo.png" alt="Logo" style={{ height: 120 }} />
+      </Box>
+      <Paper elevation={3} sx={{ p: 4, mt: 8, width: '100%', maxWidth: 400 }}>
         <Typography variant="h5" component="h1" align="center" gutterBottom>
           Регистрация
         </Typography>
@@ -41,12 +44,11 @@ const RegisterPage = () => {
             {error}
           </Typography>
         )}
-        <Box component="form" onSubmit={handleSubmit}>
+        <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
           <TextField
             label="Email"
             type="email"
-            fullWidth
-            margin="normal"
+            sx={{ width: '80%', margin: 'normal', backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center' }}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -54,8 +56,7 @@ const RegisterPage = () => {
           <TextField
             label="Телефон"
             type="tel"
-            fullWidth
-            margin="normal"
+            sx={{ width: '80%', margin: 'normal', backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center' }}
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             required
@@ -63,8 +64,7 @@ const RegisterPage = () => {
           <TextField
             label="Пароль"
             type="password"
-            fullWidth
-            margin="normal"
+            sx={{ width: '80%', margin: 'normal', backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center' }}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
@@ -72,13 +72,12 @@ const RegisterPage = () => {
           <TextField
             label="Подтвердите пароль"
             type="password"
-            fullWidth
-            margin="normal"
+            sx={{ width: '80%', margin: 'normal', backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center' }}
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
           />
-          <FormControl fullWidth margin="normal" required>
+          <FormControl sx={{ width: '80%', margin: 'normal' }} required>
             <InputLabel>Тип аккаунта</InputLabel>
             <Select
               value={role}
@@ -92,14 +91,12 @@ const RegisterPage = () => {
           <Button
             type="submit"
             variant="contained"
-            fullWidth
-            sx={{ mt: 3 }}
+            sx={{ width: '80%', mt: 3 }}
           >
             Зарегистрироваться
           </Button>
           <Button
-            fullWidth
-            sx={{ mt: 2 }}
+            sx={{ width: '80%', mt: 2 }}
             onClick={() => navigate('/login')}
           >
             Уже есть аккаунт? Войти
