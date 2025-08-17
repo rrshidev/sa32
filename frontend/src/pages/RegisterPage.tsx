@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Box, Button, Container, TextField, Typography, Paper, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { Button, TextField, Typography, Paper, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 
 const RegisterPage = () => {
   const [email, setEmail] = useState('');
@@ -31,53 +31,95 @@ const RegisterPage = () => {
   };
 
   return (
-<Container maxWidth="xs" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
-      <Box sx={{ position: 'absolute', top: 16, left: 16 }}>
+    <div style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: '#f5f5f5'
+    }}>
+      <div style={{ position: 'absolute', top: 16, left: 16 }}>
         <img src="/logo.png" alt="Logo" style={{ height: 120 }} />
-      </Box>
-      <Paper elevation={3} sx={{ p: 4, mt: 8, width: '100%', maxWidth: 400 }}>
-        <Typography variant="h5" component="h1" align="center" gutterBottom>
+      </div>
+      
+      <Paper 
+        elevation={3} 
+        style={{ 
+          width: '90%',
+          maxWidth: 450,
+          padding: '32px',
+          margin: '16px',
+          transform: 'translateY(-20px)'
+        }}
+      >
+        <Typography variant="h5" component="h1" align="center" gutterBottom style={{ marginBottom: '24px' }}>
           Регистрация
         </Typography>
+        
         {error && (
-          <Typography color="error" align="center" sx={{ mb: 2 }}>
+          <Typography color="error" align="center" style={{ marginBottom: '16px' }}>
             {error}
           </Typography>
         )}
-        <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+        
+        <form 
+          onSubmit={handleSubmit} 
+          style={{ 
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            width: '100%'
+          }}
+        >
           <TextField
             label="Email"
             type="email"
-            sx={{ width: '80%', margin: 'normal', backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center' }}
+            fullWidth
+            margin="normal"
+            style={{ maxWidth: 400 }}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
           />
+          
           <TextField
             label="Телефон"
             type="tel"
-            sx={{ width: '80%', margin: 'normal', backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center' }}
+            fullWidth
+            margin="normal"
+            style={{ maxWidth: 400 }}
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             required
           />
+          
           <TextField
             label="Пароль"
             type="password"
-            sx={{ width: '80%', margin: 'normal', backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center' }}
+            fullWidth
+            margin="normal"
+            style={{ maxWidth: 400 }}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+          
           <TextField
             label="Подтвердите пароль"
             type="password"
-            sx={{ width: '80%', margin: 'normal', backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center' }}
+            fullWidth
+            margin="normal"
+            style={{ maxWidth: 400 }}
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
           />
-          <FormControl sx={{ width: '80%', margin: 'normal' }} required>
+          
+          <FormControl fullWidth margin="normal" style={{ maxWidth: 400 }} required>
             <InputLabel>Тип аккаунта</InputLabel>
             <Select
               value={role}
@@ -88,22 +130,26 @@ const RegisterPage = () => {
               <MenuItem value="service">Автосервис</MenuItem>
             </Select>
           </FormControl>
+          
           <Button
             type="submit"
             variant="contained"
-            sx={{ width: '80%', mt: 3 }}
+            fullWidth
+            style={{ marginTop: '24px', maxWidth: 400, padding: '8px 0' }}
           >
             Зарегистрироваться
           </Button>
+          
           <Button
-            sx={{ width: '80%', mt: 2 }}
+            fullWidth
+            style={{ marginTop: '16px', maxWidth: 400 }}
             onClick={() => navigate('/login')}
           >
             Уже есть аккаунт? Войти
           </Button>
-        </Box>
+        </form>
       </Paper>
-    </Container>
+    </div>
   );
 };
 
