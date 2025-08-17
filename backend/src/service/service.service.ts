@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, Like } from 'typeorm';
+import { Repository, Between, Like, Raw, FindOptionsWhere } from 'typeorm';
 import { Service } from '../entities/service.entity';
 import { ServiceCategory } from '../entities/service-category.entity';
 import { CreateServiceDto } from './dto/create-service.dto';
@@ -34,14 +34,24 @@ export class ServiceService {
   }
 
   async findServices(filter: ServiceFilter): Promise<Service[]> {
-    const where: any = {};
+    const where: FindOptionsWhere<Service> = {};
 
-    if (filter.categoryId) where.category = { id: filter.categoryId };
+    if (filter.categoryId) {
+      where.category = { id: filter.categoryId };
+    }
     if (filter.minPrice && filter.maxPrice) {
       where.price = Between(filter.minPrice, filter.maxPrice);
     }
     if (filter.searchQuery) {
       where.name = Like(`%${filter.searchQuery}%`);
+    }
+
+    // Filter by date range if provided
+    if (filter.dateAt && filter.dateTo) {
+      where.availableDates = Raw(
+        (alias) =>
+          `JSON_CONTAINS(${alias}.availableDates, '[\\"${filter.dateAt}\\"]', '$')`,
+      );
     }
 
     return this.serviceRepo.find({

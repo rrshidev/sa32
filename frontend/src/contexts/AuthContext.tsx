@@ -23,15 +23,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
-const loadUser = async () => {
+  const loadUser = async () => {
     try {
       const token = localStorage.getItem('authToken');
-      const response = await apiClient.get('/user/profile', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setUser(response.data);
+      if (token) {
+        const response = await apiClient.get('/user/profile', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setUser(response.data);
+      }
     } catch (error) {
       console.error('Failed to load user', error);
       logout();

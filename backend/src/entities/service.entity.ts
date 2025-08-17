@@ -5,6 +5,8 @@ import {
   PrimaryGeneratedColumn,
   JoinColumn,
   OneToMany,
+  CreateDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { ServiceCategory } from './service-category.entity';
 import { ServiceProfile } from './service-profile.entity';
@@ -26,6 +28,15 @@ export class Service {
 
   @Column('int')
   durationMinutes: number;
+
+  @Column('simple-array')
+  availableDates: string[]; // Store dates as ISO strings
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
 
   @ManyToOne(() => ServiceCategory, (category) => category.services)
   @JoinColumn({ name: 'category_id' }) // Явное указание имени столбца

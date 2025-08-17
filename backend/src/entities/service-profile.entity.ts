@@ -4,10 +4,13 @@ import {
   Column,
   OneToOne,
   OneToMany,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 import { User } from './user.entity';
 import { Service } from './service.entity';
 import { Master } from './master.entity';
+import { City } from './city.entity';
 
 @Entity()
 export class ServiceProfile {
@@ -22,6 +25,10 @@ export class ServiceProfile {
 
   @Column({ nullable: true })
   description: string;
+
+  @ManyToOne(() => City, (city) => city.serviceProfiles)
+  @JoinColumn({ name: 'city_id' })
+  city: City;
 
   @OneToOne(() => User, (user) => user.serviceProfile)
   user: User;

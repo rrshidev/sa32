@@ -31,6 +31,11 @@ export const NotificationChannel = {
 
 export type NotificationChannel = typeof NotificationChannel[keyof typeof NotificationChannel];
 
+export interface City {
+  id: string;
+  name: string;
+}
+
 // Базовые интерфейсы
 export interface BaseEntity {
   id: string;
@@ -123,7 +128,7 @@ export interface Notification extends BaseEntity {
   content: string;
   isRead: boolean;
   isSent: boolean;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   recipient?: User;
 }
 
