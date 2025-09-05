@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode, useEffect } from 'react';
+import { createContext, useContext, useState, type ReactNode, useEffect, useCallback } from 'react';
 import apiClient from '../api/apiClient';
 import { type User } from '../types';
 
@@ -15,15 +15,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
 
-  useEffect(() => {
-    const token = localStorage.getItem('authToken');
-    if (token) {
-      // Загрузка данных пользователя при наличии токена
-      loadUser();
-    }
-  }, []);
-
-  const loadUser = async () => {
+  const loadUser = useCallback(async () => {
     try {
       const token = localStorage.getItem('authToken');
       if (token) {
@@ -38,7 +30,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.error('Failed to load user', error);
       logout();
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+      // Загрузка данных пользователя при наличии токена
+      loadUser();
+    }
+  }, [loadUser]);
 
   const register = async (email: string, password: string, phone: string, role: 'client' | 'service') => {
     const response = await apiClient.post('/auth/register', {
@@ -69,7 +69,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-export const useAuth = () => {
+export const AuthContext = () => {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');
