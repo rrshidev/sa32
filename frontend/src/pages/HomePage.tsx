@@ -10,7 +10,7 @@ import {
   useTheme,
   useMediaQuery
 } from '@mui/material';
-import { DatePicker, TimePicker } from '@mui/x-date-pickers';
+import { DatePicker } from '@mui/x-date-pickers';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { ru } from 'date-fns/locale';
@@ -21,7 +21,6 @@ const HomePage = () => {
   const [cities, setCities] = useState<City[]>([]);
   const [selectedCity, setSelectedCity] = useState('');
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
-  const [selectedTime, setSelectedTime] = useState<Date | null>(new Date());
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -35,11 +34,10 @@ const HomePage = () => {
   }, []);
 
   const handleSearch = () => {
-    if (selectedCity && selectedDate && selectedTime) {
+    if (selectedCity && selectedDate) {
       const dateAt = selectedDate.toISOString().split('T')[0];
-      const timeAt = selectedTime.toTimeString().split(' ')[0];
       const dateTo = new Date(selectedDate.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-      window.location.href = `/services?dateAt=${dateAt}T${timeAt}&dateTo=${dateTo}`;
+      window.location.href = `/services?dateAt=${dateAt}&dateTo=${dateTo}`;
     }
   };
 
@@ -129,23 +127,12 @@ const HomePage = () => {
                   }
                 }}
               />
-              <TimePicker
-                label="Выберите время"
-                value={selectedTime}
-                onChange={setSelectedTime}
-                slotProps={{
-                  textField: {
-                    fullWidth: true,
-                    size: isMobile ? 'small' : 'medium'
-                  }
-                }}
-              />
 
               <Button
                 variant="contained"
                 size={isMobile ? 'medium' : 'large'}
                 fullWidth
-                disabled={!selectedCity || !selectedDate || !selectedTime}
+                disabled={!selectedCity || !selectedDate}
                 onClick={handleSearch}
                 sx={{
                   py: isMobile ? 1 : 1.5,
