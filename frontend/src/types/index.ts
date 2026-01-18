@@ -54,6 +54,7 @@ export interface ServiceProfile extends BaseEntity {
   name: string;
   address: string;
   description?: string;
+  city?: City;
   user?: User;
   services?: Service[];
   masters?: Master[];

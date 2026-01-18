@@ -25,6 +25,15 @@ apiClient.interceptors.response.use(
   },
   (error) => {
     console.error('API Error:', error.response?.status, error.response?.data, error.message);
+
+    // Handle 401 Unauthorized - logout user
+    if (error.response?.status === 401) {
+      console.log('401 Unauthorized - logging out user');
+      localStorage.removeItem('authToken');
+      // Reload page to reset auth state
+      window.location.href = '/login';
+    }
+
     return Promise.reject(error);
   }
 );

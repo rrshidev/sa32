@@ -10,6 +10,8 @@ import {
   useTheme,
   useMediaQuery
 } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { DatePicker } from '@mui/x-date-pickers';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -23,6 +25,8 @@ const HomePage = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const navigate = useNavigate();
+  const { user } = useAuth();
 
   useEffect(() => {
     const loadCities = async () => {
@@ -33,11 +37,26 @@ const HomePage = () => {
     loadCities();
   }, []);
 
+  // Перенаправляем автосервис на страницу управления
+  useEffect(() => {
+    if (user && user.role === 'service') {
+      navigate('/service-management');
+    }
+  }, [user, navigate]);
+
   const handleSearch = () => {
     if (selectedCity && selectedDate) {
       const dateAt = selectedDate.toISOString().split('T')[0];
       const dateTo = new Date(selectedDate.getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-      window.location.href = `/services?dateAt=${dateAt}&dateTo=${dateTo}`;
+      
+      // Находим ID города
+      console.log('Selected city:', selectedCity);
+      console.log('Available cities:', cities.map(c => ({ id: c.id, name: c.name })));
+      const city = cities.find(c => c.name === selectedCity);
+      const cityId = city?.id || '';
+      console.log('Found city:', city, 'cityId:', cityId);
+      
+      navigate(`/services?dateAt=${dateAt}&dateTo=${dateTo}&cityId=${cityId}`);
     }
   };
 

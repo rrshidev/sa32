@@ -45,6 +45,7 @@ export class UpdateCityAndClientProfile1749963130986
     // Add more major Russian cities
     await queryRunner.query(`
       INSERT INTO city (name) VALUES
+        ('Новозыбков'),
         ('Нижний Новгород'),
         ('Самара'),
         ('Омск'),
