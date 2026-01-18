@@ -18,16 +18,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const loadUser = useCallback(async () => {
     try {
       const token = localStorage.getItem('authToken');
+      console.log('AuthContext: loadUser called, token present:', !!token);
       if (token) {
+        console.log('AuthContext: Fetching user profile with token');
         const response = await apiClient.get('/user/profile', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
+        console.log('AuthContext: User profile loaded:', response.data);
         setUser(response.data);
+      } else {
+        console.log('AuthContext: No token found, user not loaded');
       }
     } catch (error) {
-      console.error('Failed to load user', error);
+      console.error('AuthContext: Failed to load user', error);
       logout();
     }
   }, []);
@@ -69,7 +74,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-export const AuthContext = () => {
+export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error('useAuth must be used within an AuthProvider');

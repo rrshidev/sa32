@@ -5,6 +5,8 @@ import ProtectedRoute from './ProtectedRoute';
 import HomePage from '../pages/HomePage';
 import ProfilePage from '../pages/ProfilePage';
 import GaragePage from '../pages/garage/GaragePage';
+import ServiceManagementPage from '../pages/service-management/ServiceManagementPage';
+import CreateServicePage from '../pages/services/CreateServicePage';
 import { useAuth } from '../contexts/AuthContext';
 import ServiceListPage from '../pages/services/ServiceListPage';
 
@@ -47,6 +49,22 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute isAllowed={isAuthenticated} redirectTo="/login">
             <GaragePage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/service-management"
+        element={
+          <ProtectedRoute isAllowed={isAuthenticated} redirectTo="/login">
+            <ServiceManagementPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/services/new"
+        element={
+          <ProtectedRoute isAllowed={isAuthenticated} redirectTo="/login">
+            <CreateServicePage />
           </ProtectedRoute>
         }
       />

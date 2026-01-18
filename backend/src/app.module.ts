@@ -9,6 +9,9 @@ import { AppointmentModule } from './appointment/appointment.module';
 import { GarageModule } from './garage/garage.module';
 import { ServiceModule } from './service/service.module';
 import { CityModule } from './city/city.module';
+import { ServiceProfileModule } from './service-profile/service-profile.module';
+import { ServiceCategoryModule } from './service-category/service-category.module';
+import { SeedModule } from './database/seed.module';
 
 @Module({
   imports: [
@@ -41,6 +44,9 @@ import { CityModule } from './city/city.module';
     GarageModule,
     ServiceModule,
     CityModule,
+    ServiceProfileModule,
+    ServiceCategoryModule,
+    SeedModule,
   ],
 })
 export class AppModule {}

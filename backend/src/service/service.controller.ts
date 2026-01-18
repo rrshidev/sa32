@@ -1,8 +1,9 @@
-import { Controller, Post, Body, Get, Query, Param, Req } from '@nestjs/common';
+import { Controller, Post, Body, Get, Query, Param, Req, UseGuards } from '@nestjs/common';
 import { ServiceService } from './service.service';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { ServiceFilter } from './interfaces/service-filter.interface';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @ApiTags('Services')
 @Controller('services')
@@ -10,11 +11,13 @@ export class ServiceController {
   constructor(private readonly serviceService: ServiceService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
   @ApiOperation({ summary: 'Create new service' })
   @ApiResponse({ status: 201, description: 'Service created' })
   async create(@Req() req, @Body() createDto: CreateServiceDto) {
     return this.serviceService.createService(
-      req.user.sub, // ID профиля сервиса
+      req.user.sub, // ID пользователя
       createDto,
     );
   }

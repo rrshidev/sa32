@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between, Like, Raw, FindOptionsWhere } from 'typeorm';
 import { Service } from '../entities/service.entity';
 import { ServiceCategory } from '../entities/service-category.entity';
+import { ServiceProfile } from '../entities/service-profile.entity';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { ServiceFilter } from './interfaces/service-filter.interface';
 
@@ -13,12 +14,23 @@ export class ServiceService {
     private serviceRepo: Repository<Service>,
     @InjectRepository(ServiceCategory)
     private categoryRepo: Repository<ServiceCategory>,
+    @InjectRepository(ServiceProfile)
+    private serviceProfileRepo: Repository<ServiceProfile>,
   ) {}
 
   async createService(
-    profileId: string,
+    userId: string,
     createDto: CreateServiceDto,
   ): Promise<Service> {
+    // Находим профиль автосервиса по ID пользователя
+    const serviceProfile = await this.serviceProfileRepo.findOne({
+      where: { user: { id: userId } },
+    });
+    
+    if (!serviceProfile) {
+      throw new NotFoundException('Service profile not found. Please create a service profile first.');
+    }
+
     const category = await this.categoryRepo.findOneBy({
       id: createDto.categoryId,
     });
@@ -26,7 +38,7 @@ export class ServiceService {
 
     const service = this.serviceRepo.create({
       ...createDto,
-      serviceProfile: { id: profileId },
+      serviceProfile,
       category,
     });
 
@@ -34,6 +46,7 @@ export class ServiceService {
   }
 
   async findServices(filter: ServiceFilter): Promise<Service[]> {
+    console.log('ServiceService.findServices - filter:', filter);
     const where: FindOptionsWhere<Service> = {};
 
     if (filter.categoryId) {
@@ -46,6 +59,12 @@ export class ServiceService {
       where.name = Like(`%${filter.searchQuery}%`);
     }
 
+    // Filter by city if provided
+    if (filter.cityId) {
+      console.log('Filtering by cityId:', filter.cityId);
+      where.serviceProfile = { city: { id: filter.cityId } };
+    }
+
     // Filter by date range if provided
     if (filter.dateAt && filter.dateTo) {
       where.availableDates = Raw(
@@ -54,12 +73,15 @@ export class ServiceService {
       );
     }
 
-    return this.serviceRepo.find({
+    console.log('Final where clause:', where);
+    const result = await this.serviceRepo.find({
       where,
-      relations: ['category'],
+      relations: ['category', 'serviceProfile', 'serviceProfile.city'],
       take: filter.limit,
       skip: filter.offset,
     });
+    console.log('Found services count:', result.length);
+    return result;
   }
 
   async getServiceById(id: string): Promise<Service> {

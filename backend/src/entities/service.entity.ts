@@ -29,7 +29,7 @@ export class Service {
   @Column('int')
   durationMinutes: number;
 
-  @Column('simple-array')
+  @Column('simple-array', { nullable: true })
   availableDates: string[]; // Store dates as ISO strings
 
   @CreateDateColumn()
