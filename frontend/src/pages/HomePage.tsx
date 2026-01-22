@@ -8,8 +8,13 @@ import {
   Container,
   Stack,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
+  CircularProgress,
+  IconButton,
+  AppBar,
+  Toolbar
 } from '@mui/material';
+import { Logout } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { DatePicker } from '@mui/x-date-pickers';
@@ -20,29 +25,35 @@ import { fetchCities } from '../services/cityService';
 import type { City } from '../types';
 
 const HomePage = () => {
+  const { user, loading, logout } = useAuth();
   const [cities, setCities] = useState<City[]>([]);
   const [selectedCity, setSelectedCity] = useState('');
-  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const navigate = useNavigate();
-  const { user } = useAuth();
 
   useEffect(() => {
     const loadCities = async () => {
-      const cities = await fetchCities();
-      setCities(cities);
+      try {
+        const cities = await fetchCities();
+        setCities(cities);
+      } catch (error) {
+        console.error('Failed to load cities:', error);
+      }
     };
 
     loadCities();
   }, []);
 
-  // Перенаправляем автосервис на страницу управления
+  // Перенаправляем автосервис на страницу управления (только после загрузки)
   useEffect(() => {
-    if (user && user.role === 'service') {
+    console.log('HomePage - useEffect triggered:', { loading, user, userRole: user?.role });
+    if (!loading && user && user.role === 'service') {
+      console.log('HomePage - Redirecting service user to /service-management');
       navigate('/service-management');
     }
-  }, [user, navigate]);
+  }, [user, loading, navigate]);
 
   const handleSearch = () => {
     if (selectedCity && selectedDate) {
@@ -62,19 +73,53 @@ const HomePage = () => {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ru}>
-      <Box
-        sx={{
-          minHeight: '100vh',
-          width: '100vw',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: 'linear-gradient(to bottom, #f5f5f5, #e0e0e0)',
-          p: isMobile ? 2 : 3,
-          boxSizing: 'border-box'
-        }}
-      >
+      {/* AppBar с кнопкой выхода */}
+      <AppBar position="fixed" sx={{ zIndex: theme.zIndex.drawer + 1 }}>
+        <Toolbar>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            Автосервис
+          </Typography>
+          {user && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Typography variant="body2" sx={{ display: { xs: 'none', sm: 'block' } }}>
+                {user.email}
+              </Typography>
+              <IconButton color="inherit" onClick={logout} title="Выйти">
+                <Logout />
+              </IconButton>
+            </Box>
+          )}
+        </Toolbar>
+      </AppBar>
+
+      {loading ? (
+        <Box
+          sx={{
+            minHeight: '100vh',
+            width: '100vw',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'linear-gradient(to bottom, #f5f5f5, #e0e0e0)'
+          }}
+        >
+          <CircularProgress size={60} />
+        </Box>
+      ) : (
+        <Box
+          sx={{
+            minHeight: '100vh',
+            width: '100vw',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'linear-gradient(to bottom, #f5f5f5, #e0e0e0)',
+            p: isMobile ? 2 : 3,
+            boxSizing: 'border-box',
+            paddingTop: '64px' // Отступ для AppBar
+          }}
+        >
         {/* Логотип с адаптивным размером */}
         <Box sx={{
           mb: isMobile ? 4 : 6,
@@ -166,6 +211,7 @@ const HomePage = () => {
           </Stack>
         </Container>
       </Box>
+      )}
     </LocalizationProvider>
   );
 };
