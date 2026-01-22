@@ -1,5 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { ServiceProfile } from './service-profile.entity';
+import { City } from './city.entity';
 
 @Entity()
 export class Master {
@@ -26,4 +33,8 @@ export class Master {
 
   @ManyToOne(() => ServiceProfile, (serviceProfile) => serviceProfile.masters)
   serviceProfile: ServiceProfile;
+
+  @ManyToOne(() => City, (city) => city.masters)
+  @JoinColumn({ name: 'city_id' })
+  city: City;
 }

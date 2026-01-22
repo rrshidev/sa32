@@ -40,9 +40,10 @@ export class AuthController {
   @ApiOperation({ summary: 'User login' })
   @ApiResponse({ status: 200, description: 'Successful login' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  login(@Request() req: Request & { user: User }) {
+  async login(@Request() req: Request & { user: User }) {
     const user: User = req.user;
-    return this.authService.login(user);
+    const { access_token } = await this.authService.login(user);
+    return { access_token };
   }
 
   @Post('telegram')
