@@ -1,0 +1,80 @@
+.page-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+  background-color: #f0f4f8;
+  min-height: 100vh;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.logo {
+  height: 4em;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #007bff;
+}
+
+.city-select {
+  margin-bottom: 2rem;
+}
+
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.service-card {
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: transform 0.2s;
+}
+
+.service-card:hover {
+  transform: translateY(-5px);
+}
+
+.service-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: #007bff;
+  color: #ffffff;
+}
+
+.service-card-body {
+  padding: 1rem;
+}
+
+.service-card-footer {
+  padding: 1rem;
+  background-color: #f0f4f8;
+  text-align: right;
+}
+
+.service-card-footer button {
+  background-color: #007bff;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.service-card-footer button:hover {
+  background-color: #0056b3;
+}

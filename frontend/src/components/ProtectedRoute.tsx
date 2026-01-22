@@ -1,16 +1,19 @@
-import { Navigate, useLocation } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { CircularProgress, Box } from '@mui/material';
 
 interface ProtectedRouteProps {
-  isAllowed: boolean;
-  redirectTo: string;
   children: React.ReactNode;
+  requireAuth?: boolean;
+  allowedRoles?: string[];
 }
 
-const ProtectedRoute = ({ isAllowed, redirectTo, children }: ProtectedRouteProps) => {
-  const location = useLocation();
-  const { loading } = useAuth();
+export const ProtectedRoute = ({ 
+  children, 
+  requireAuth = true, 
+  allowedRoles = [] 
+}: ProtectedRouteProps) => {
+  const { user, loading } = useAuth();
 
   if (loading) {
     return (
@@ -27,11 +30,13 @@ const ProtectedRoute = ({ isAllowed, redirectTo, children }: ProtectedRouteProps
     );
   }
 
-  if (!isAllowed) {
-    return <Navigate to={redirectTo} state={{ from: location }} replace />;
+  if (requireAuth && !user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  if (allowedRoles.length > 0 && !allowedRoles.includes(user?.role || '')) {
+    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;
 };
-
-export default ProtectedRoute;
