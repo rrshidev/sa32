@@ -4,6 +4,7 @@ import { type User } from '../types';
 
 interface AuthContextType {
   user: User | null;
+  loading: boolean;
   register: (email: string, password: string, phone: string, role: 'client' | 'service') => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
@@ -14,6 +15,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   const loadUser = useCallback(async () => {
     try {
@@ -34,14 +36,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       console.error('AuthContext: Failed to load user', error);
       logout();
+    } finally {
+      setLoading(false);
     }
   }, []);
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
+    console.log('AuthContext - Initial useEffect:', { token: !!token, loading });
     if (token) {
       // Загрузка данных пользователя при наличии токена
       loadUser();
+    } else {
+      console.log('AuthContext - No token, setting loading to false');
+      setLoading(false);
     }
   }, [loadUser]);
 
@@ -68,7 +76,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, register, login, logout, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ user, loading, register, login, logout, isAuthenticated: !!user }}>
       {children}
     </AuthContext.Provider>
   );

@@ -65,13 +65,13 @@ export class ServiceService {
       where.serviceProfile = { city: { id: filter.cityId } };
     }
 
-    // Filter by date range if provided
-    if (filter.dateAt && filter.dateTo) {
-      where.availableDates = Raw(
-        (alias) =>
-          `JSON_CONTAINS(${alias}.availableDates, '[\\"${filter.dateAt}\\"]', '$')`,
-      );
-    }
+    // Filter by date range if provided - temporarily disabled
+    // if (filter.dateAt && filter.dateTo) {
+    //   where.availableDates = Raw(
+    //     (alias) =>
+    //       `${alias}::jsonb ? '${filter.dateAt}'`,
+    //   );
+    // }
 
     console.log('Final where clause:', where);
     const result = await this.serviceRepo.find({

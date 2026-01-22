@@ -21,9 +21,14 @@ import {
   FormControl,
   InputLabel,
   Select,
+  AppBar,
+  Toolbar,
+  IconButton as MuiIconButton,
 } from '@mui/material';
-import { Add, Edit } from '@mui/icons-material';
+import { Add, Edit, Logout } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '@mui/material/styles';
 import apiClient from '../../api/apiClient';
 import type { Service, City } from '../../types';
 
@@ -40,6 +45,7 @@ interface ServiceProfile {
 }
 
 const ServiceManagementPage = () => {
+  const { user, logout } = useAuth();
   const [serviceProfile, setServiceProfile] = useState<ServiceProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
@@ -52,6 +58,7 @@ const ServiceManagementPage = () => {
     cityId: '',
   });
   const navigate = useNavigate();
+  const theme = useTheme();
 
   useEffect(() => {
     loadServiceProfile();
@@ -123,10 +130,30 @@ const ServiceManagementPage = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        Управление автосервисом
-      </Typography>
+    <>
+      {/* AppBar с кнопкой выхода */}
+      <AppBar position="fixed" sx={{ zIndex: theme.zIndex.drawer + 1 }}>
+        <Toolbar>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+            Управление автосервисом
+          </Typography>
+          {user && (
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Typography variant="body2" sx={{ display: { xs: 'none', sm: 'block' } }}>
+                {user.email}
+              </Typography>
+              <MuiIconButton color="inherit" onClick={logout} title="Выйти">
+                <Logout />
+              </MuiIconButton>
+            </Box>
+          )}
+        </Toolbar>
+      </AppBar>
+
+      <Container maxWidth="lg" sx={{ py: 4, paddingTop: '80px' }}>
+        <Typography variant="h4" gutterBottom>
+          Управление автосервисом
+        </Typography>
 
       {error && (
         <Alert severity="error" sx={{ mb: 3 }}>
@@ -274,6 +301,7 @@ const ServiceManagementPage = () => {
         </DialogActions>
       </Dialog>
     </Container>
+    </>
   );
 };
 
