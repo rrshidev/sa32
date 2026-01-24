@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from '../user/user.service';
+import { CityService } from '../city/city.service';
 import * as bcrypt from 'bcrypt';
 import { User } from '../entities/user.entity';
 import { CreateUserDto } from 'src/user/dto/create-user.dto';
@@ -10,6 +11,7 @@ export class AuthService {
   constructor(
     private userService: UserService,
     private jwtService: JwtService,
+    private cityService: CityService,
   ) {}
 
   async validateUser(email: string, pass: string): Promise<User | null> {
@@ -48,6 +50,17 @@ export class AuthService {
     } catch (error) {
       console.error('Error hashing password:', (error as Error).message);
       throw new Error('Failed to hash password');
+    }
+
+    // Если указан город, регистрируем его
+    if (userData.city) {
+      try {
+        await this.cityService.registerCity(userData.city, 'RU');
+        console.log(`City ${userData.city} registered during user registration`);
+      } catch (error) {
+        console.error('Error registering city:', error);
+        // Не прерываем регистрацию пользователя если город не зарегистрировался
+      }
     }
 
     return this.userService.create({

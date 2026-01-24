@@ -46,12 +46,14 @@ import { LocalStrategy } from './strategies/local.strategy';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UserModule } from '../user/user.module';
+import { CityModule } from '../city/city.module';
 
 @Module({
   imports: [
     // Используем TypeOrmModule вместо UserModule для разрыва цикла
     TypeOrmModule.forFeature([User]),
     forwardRef(() => UserModule),
+    CityModule,
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],

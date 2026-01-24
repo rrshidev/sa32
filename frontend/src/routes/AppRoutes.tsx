@@ -10,7 +10,7 @@ import { useAuth } from '../contexts/AuthContext';
 import ServiceListPage from '../pages/services/ServiceListPage';
 import ServiceDetailPage from '../pages/services/ServiceDetailPage';
 import ClientDashboardPage from '../pages/client/ClientDashboardPage';
-import ClientBookingsPageStatic from '../pages/client/ClientBookingsPageStatic';
+import ClientBookingsPage from '../pages/client/ClientBookingsPage';
 import ClientGaragePage from '../pages/client/GaragePage';
 
 const AppRoutes = () => {
@@ -81,7 +81,7 @@ const AppRoutes = () => {
       />
       <Route
         path="/client/bookings"
-        element={<ClientBookingsPageStatic />}
+        element={<ClientBookingsPage />}
       />
       <Route
         path="/client"

@@ -36,7 +36,9 @@ const HomePage = () => {
   useEffect(() => {
     const loadCities = async () => {
       try {
+        console.log('HomePage - Loading cities...');
         const cities = await fetchCities();
+        console.log('HomePage - Cities loaded:', cities);
         setCities(cities);
       } catch (error) {
         console.error('Failed to load cities:', error);

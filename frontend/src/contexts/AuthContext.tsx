@@ -5,7 +5,7 @@ import { type User } from '../types';
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  register: (email: string, password: string, phone: string, role: 'client' | 'service') => Promise<void>;
+  register: (email: string, password: string, phone: string, role: 'client' | 'service', city?: string) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   isAuthenticated: boolean;
@@ -53,12 +53,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [loadUser]);
 
-  const register = async (email: string, password: string, phone: string, role: 'client' | 'service') => {
+  const register = async (email: string, password: string, phone: string, role: 'client' | 'service', city?: string) => {
     const response = await apiClient.post('/auth/register', {
       email,
       password,
       phone,
-      role
+      role,
+      city
     });
     localStorage.setItem('authToken', response.data.access_token);
     await loadUser();

@@ -19,4 +19,9 @@ export class CreateUserDto {
   @ApiProperty({ enum: UserRole })
   @IsEnum(UserRole)
   role: UserRole;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
+  city?: string;
 }
