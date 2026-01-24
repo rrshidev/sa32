@@ -9,6 +9,8 @@ import {
 import { ClientProfile } from './client-profile.entity';
 import { ServiceProfile } from './service-profile.entity';
 import { Notification } from './notification.entity';
+import { Booking } from '../booking/entities/booking.entity';
+import { Car } from './car.entity';
 
 export enum UserRole {
   CLIENT = 'client',
@@ -48,4 +50,13 @@ export class User {
 
   @OneToMany(() => Notification, (notification) => notification)
   notifications: Notification[];
+
+  @OneToMany(() => Booking, (booking) => booking.client)
+  bookingsAsClient: Booking[];
+
+  @OneToMany(() => Booking, (booking) => booking.serviceProvider)
+  bookingsAsService: Booking[];
+
+  @OneToMany(() => Car, (car) => car.owner)
+  cars: Car[];
 }

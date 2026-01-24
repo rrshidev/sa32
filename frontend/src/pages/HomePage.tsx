@@ -46,12 +46,15 @@ const HomePage = () => {
     loadCities();
   }, []);
 
-  // Перенаправляем автосервис на страницу управления (только после загрузки)
+  // Перенаправляем пользователей в зависимости от роли (только после загрузки)
   useEffect(() => {
     console.log('HomePage - useEffect triggered:', { loading, user, userRole: user?.role });
-    if (!loading && user && user.role === 'service') {
-      console.log('HomePage - Redirecting service user to /service-management');
-      navigate('/service-management');
+    if (!loading && user) {
+      if (user.role === 'service') {
+        console.log('HomePage - Redirecting service user to /service-management');
+        navigate('/service-management');
+      }
+      // Для клиентов не делаем автоматический редирект - даем выбор на главной странице
     }
   }, [user, loading, navigate]);
 
@@ -81,6 +84,13 @@ const HomePage = () => {
           </Typography>
           {user && (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              <Button
+                color="inherit"
+                onClick={() => navigate('/client')}
+                sx={{ display: { xs: 'none', sm: 'block' } }}
+              >
+                Личный кабинет
+              </Button>
               <Typography variant="body2" sx={{ display: { xs: 'none', sm: 'block' } }}>
                 {user.email}
               </Typography>

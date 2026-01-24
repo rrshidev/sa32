@@ -11,6 +11,7 @@ import {
 import { ServiceCategory } from './service-category.entity';
 import { ServiceProfile } from './service-profile.entity';
 import { Appointment } from './appointment.entity';
+import { Booking } from '../booking/entities/booking.entity';
 
 @Entity()
 export class Service {
@@ -47,4 +48,7 @@ export class Service {
 
   @OneToMany(() => Appointment, (appointment) => appointment.service)
   appointments: Appointment[];
+
+  @OneToMany(() => Booking, (booking) => booking.service)
+  bookings: Booking[];
 }
