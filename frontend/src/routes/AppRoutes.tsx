@@ -4,11 +4,14 @@ import RegisterPage from '../pages/RegisterPage';
 import ProtectedRoute from './ProtectedRoute';
 import HomePage from '../pages/HomePage';
 import ProfilePage from '../pages/ProfilePage';
-import GaragePage from '../pages/garage/GaragePage';
 import ServiceManagementPage from '../pages/service-management/ServiceManagementPage';
 import CreateServicePage from '../pages/services/CreateServicePage';
 import { useAuth } from '../contexts/AuthContext';
 import ServiceListPage from '../pages/services/ServiceListPage';
+import ServiceDetailPage from '../pages/services/ServiceDetailPage';
+import ClientDashboardPage from '../pages/client/ClientDashboardPage';
+import ClientBookingsPageStatic from '../pages/client/ClientBookingsPageStatic';
+import ClientGaragePage from '../pages/client/GaragePage';
 
 const AppRoutes = () => {
   const { isAuthenticated } = useAuth();
@@ -37,6 +40,14 @@ const AppRoutes = () => {
         }
       />
       <Route
+        path="/services/:id"
+        element={
+          <ProtectedRoute isAllowed={isAuthenticated} redirectTo="/login">
+            <ServiceDetailPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/profile"
         element={
           <ProtectedRoute isAllowed={isAuthenticated} redirectTo="/login">
@@ -48,7 +59,7 @@ const AppRoutes = () => {
         path="/garage"
         element={
           <ProtectedRoute isAllowed={isAuthenticated} redirectTo="/login">
-            <GaragePage />
+            <ClientGaragePage />
           </ProtectedRoute>
         }
       />
@@ -57,6 +68,34 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute isAllowed={isAuthenticated} redirectTo="/login">
             <ServiceManagementPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/bookings"
+        element={
+          <ProtectedRoute isAllowed={isAuthenticated} redirectTo="/login">
+            <Navigate to="/service-management" replace />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/client/bookings"
+        element={<ClientBookingsPageStatic />}
+      />
+      <Route
+        path="/client"
+        element={
+          <ProtectedRoute isAllowed={isAuthenticated} redirectTo="/login">
+            <ClientDashboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/garage"
+        element={
+          <ProtectedRoute isAllowed={isAuthenticated} redirectTo="/login">
+            <ClientGaragePage />
           </ProtectedRoute>
         }
       />
