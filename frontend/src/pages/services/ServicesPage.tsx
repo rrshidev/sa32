@@ -29,7 +29,7 @@ const ServicesPage = () => {
         setLoading(true);
         const [categoriesRes, servicesRes] = await Promise.all([
           apiClient.get('/service/categories'),
-          apiClient.get('/service')
+          apiClient.get('/services')
         ]);
         setCategories(categoriesRes.data);
         setServices(servicesRes.data);

@@ -34,6 +34,11 @@ export type NotificationChannel = typeof NotificationChannel[keyof typeof Notifi
 export interface City {
   id: string;
   name: string;
+  country: string;
+  hasUsers: boolean;
+  hasServices: boolean;
+  serviceCount?: number;
+  clientCount?: number;
 }
 
 // Базовые интерфейсы

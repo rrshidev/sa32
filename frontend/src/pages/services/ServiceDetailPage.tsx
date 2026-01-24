@@ -32,6 +32,9 @@ interface ServiceDetail extends Service {
     city: {
       id: string;
       name: string;
+      country: string;
+      hasUsers: boolean;
+      hasServices: boolean;
     };
     createdAt: Date;
   };

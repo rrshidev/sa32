@@ -3,13 +3,8 @@ import {
   Box,
   Typography,
   Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Chip,
+  Card,
+  CardContent,
   Button,
   Dialog,
   DialogTitle,
@@ -20,34 +15,28 @@ import {
   IconButton,
   AppBar,
   Toolbar,
+  Chip,
+  Divider,
 } from '@mui/material';
-import { ArrowBack, Close } from '@mui/icons-material';
+import { ArrowBack, Cancel, Edit } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import apiClient from '../../api/apiClient';
 
-export enum BookingStatus {
-  PENDING = 'pending',
-  CONFIRMED = 'confirmed',
-  CANCELLED = 'cancelled',
-  COMPLETED = 'completed',
-  REJECTED = 'rejected',
-}
-
 interface Booking {
   id: string;
   bookingDate: string;
+  status: string;
   clientComment?: string;
-  status: BookingStatus;
-  confirmedAt?: string;
-  rejectionReason?: string;
-  createdAt: string;
-  updatedAt: string;
   service: {
     id: string;
     name: string;
-    price: number;
-    durationMinutes: number;
+    description: string;
+  };
+  serviceProvider: {
+    id: string;
+    email: string;
+    phone: string;
     serviceProfile: {
       name: string;
       address: string;
@@ -64,9 +53,8 @@ const ClientBookingsPage = () => {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
-  const [openCancelDialog, setOpenCancelDialog] = useState(false);
-  const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
     loadBookings();
@@ -74,78 +62,77 @@ const ClientBookingsPage = () => {
 
   const loadBookings = async () => {
     try {
+      console.log('ClientBookingsPage - Starting to load bookings...');
       const response = await apiClient.get('/booking/client');
-      console.log('ClientBookingsPage - Raw bookings data:', response.data);
+      console.log('ClientBookingsPage - Bookings loaded:', response.data);
       setBookings(response.data);
-      console.log('ClientBookingsPage - Active bookings:', 
-        response.data.filter((b: any) => 
-          b.status === 'pending' || b.status === 'confirmed'
-        )
-      );
+      console.log('ClientBookingsPage - State updated with bookings');
     } catch (error) {
       console.error('Failed to load bookings:', error);
       setError('Не удалось загрузить записи');
     } finally {
+      console.log('ClientBookingsPage - Loading finished');
       setLoading(false);
     }
   };
 
-  const handleCancel = async () => {
+  const handleCancelBooking = async () => {
     if (!selectedBooking) return;
 
-    setActionLoading(true);
     try {
       await apiClient.patch(`/booking/${selectedBooking.id}/cancel`);
-      setOpenCancelDialog(false);
+      setBookings(bookings.map(b => 
+        b.id === selectedBooking.id 
+          ? { ...b, status: 'cancelled' }
+          : b
+      ));
+      setCancelDialogOpen(false);
       setSelectedBooking(null);
-      await loadBookings();
-    } catch (error: any) {
-      setError(error.response?.data?.message || 'Не удалось отменить запись');
-    } finally {
-      setActionLoading(false);
+    } catch (error) {
+      console.error('Failed to cancel booking:', error);
+      setError('Не удалось отменить запись');
     }
   };
 
-  const getStatusColor = (status: BookingStatus) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
-      case BookingStatus.PENDING: return 'warning';
-      case BookingStatus.CONFIRMED: return 'success';
-      case BookingStatus.CANCELLED: return 'default';
-      case BookingStatus.COMPLETED: return 'primary';
-      case BookingStatus.REJECTED: return 'error';
+      case 'confirmed': return 'success';
+      case 'pending': return 'warning';
+      case 'cancelled': return 'error';
       default: return 'default';
     }
   };
 
-  const getStatusText = (status: BookingStatus) => {
+  const getStatusText = (status: string) => {
     switch (status) {
-      case BookingStatus.PENDING: return 'Ожидает подтверждения';
-      case BookingStatus.CONFIRMED: return 'Подтверждена';
-      case BookingStatus.CANCELLED: return 'Отменена';
-      case BookingStatus.COMPLETED: return 'Выполнена';
-      case BookingStatus.REJECTED: return 'Отклонена';
+      case 'confirmed': return 'Подтверждена';
+      case 'pending': return 'Ожидает подтверждения';
+      case 'cancelled': return 'Отменена';
       default: return status;
     }
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString('ru-RU');
+    return new Date(dateString).toLocaleString('ru-RU', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
-  const activeBookings = bookings.filter(b => 
-    b.status === BookingStatus.PENDING || b.status === BookingStatus.CONFIRMED
-  );
-  const pastBookings = bookings.filter(b => 
-    b.status === BookingStatus.COMPLETED || b.status === BookingStatus.CANCELLED || b.status === BookingStatus.REJECTED
-  );
-
   if (loading) {
+    console.log('ClientBookingsPage - Still loading...');
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
         <CircularProgress />
       </Box>
     );
   }
+
+  console.log('ClientBookingsPage - About to render, bookings count:', bookings.length);
+  console.log('ClientBookingsPage - Bookings data:', bookings);
 
   return (
     <>
@@ -170,7 +157,7 @@ const ClientBookingsPage = () => {
                 {user.email}
               </Typography>
               <IconButton color="inherit" onClick={logout} title="Выйти">
-                <Close />
+                <Cancel />
               </IconButton>
             </Box>
           )}
@@ -180,179 +167,129 @@ const ClientBookingsPage = () => {
       <Box sx={{ p: 3, paddingTop: '80px' }}>
         {error && <Alert severity="error" sx={{ mb: 3 }}>{error}</Alert>}
 
-        {/* Активные записи */}
         <Paper sx={{ p: 3, mb: 3 }}>
-          <Typography variant="h5" gutterBottom color="primary">
-            Активные записи ({activeBookings.length})
+          <Typography variant="h4" gutterBottom>
+            Мои записи
           </Typography>
-
-          {activeBookings.length === 0 ? (
-            <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
-              У вас нет активных записей
-            </Typography>
-          ) : (
-            <TableContainer>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Автосервис</TableCell>
-                    <TableCell>Услуга</TableCell>
-                    <TableCell>Дата и время</TableCell>
-                    <TableCell>Статус</TableCell>
-                    <TableCell>Действия</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {activeBookings.map((booking) => (
-                    <TableRow key={booking.id}>
-                      <TableCell>
-                        <Box>
-                          <Typography variant="body2" fontWeight="bold">
-                            {booking.service.serviceProfile.name}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {booking.service.serviceProfile.address}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary" display="block">
-                            {booking.service.serviceProfile.city.name}
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Box>
-                          <Typography variant="body2" fontWeight="bold">
-                            {booking.service.name}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {booking.service.price} ₽ • {booking.service.durationMinutes} мин
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        {formatDate(booking.bookingDate)}
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={getStatusText(booking.status)}
-                          color={getStatusColor(booking.status) as any}
-                          size="small"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Box sx={{ display: 'flex', gap: 1 }}>
-                          {booking.status === BookingStatus.PENDING && (
-                            <Button
-                              size="small"
-                              variant="outlined"
-                              color="error"
-                              startIcon={<Close />}
-                              onClick={() => {
-                                setSelectedBooking(booking);
-                                setOpenCancelDialog(true);
-                              }}
-                              disabled={actionLoading}
-                            >
-                              Отменить
-                            </Button>
-                          )}
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          )}
+          <Typography variant="body1" color="text.secondary">
+            Всего записей: {bookings.length}
+          </Typography>
         </Paper>
 
-        {/* История записей */}
-        <Paper sx={{ p: 3 }}>
-          <Typography variant="h5" gutterBottom>
-            История записей ({pastBookings.length})
-          </Typography>
-
-          {pastBookings.length === 0 ? (
-            <Typography variant="body1" color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
-              У вас пока нет завершенных записей
+        {bookings.length === 0 ? (
+          <Paper sx={{ p: 4, textAlign: 'center' }}>
+            <Typography variant="h6" gutterBottom>
+              У вас пока нет записей
             </Typography>
-          ) : (
-            <TableContainer>
-              <Table>
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Автосервис</TableCell>
-                    <TableCell>Услуга</TableCell>
-                    <TableCell>Дата и время</TableCell>
-                    <TableCell>Статус</TableCell>
-                    <TableCell>Комментарий</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {pastBookings.map((booking) => (
-                    <TableRow key={booking.id}>
-                      <TableCell>
-                        <Box>
-                          <Typography variant="body2" fontWeight="bold">
-                            {booking.service.serviceProfile.name}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {booking.service.serviceProfile.address}
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="body2" fontWeight="bold">
-                          {booking.service.name}
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+              Найдите подходящие услуги и запишитесь на посещение автосервиса
+            </Typography>
+            <Button
+              variant="contained"
+              onClick={() => navigate('/')}
+            >
+              Найти услуги
+            </Button>
+          </Paper>
+        ) : (
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {bookings.map((booking, index) => {
+              console.log(`ClientBookingsPage - Rendering booking ${index}:`, booking);
+              
+              // Безопасная проверка данных
+              if (!booking || !booking.service || !booking.serviceProvider) {
+                console.error('ClientBookingsPage - Invalid booking data:', booking);
+                return null;
+              }
+
+              return (
+                <Card key={booking.id} elevation={2}>
+                  <CardContent>
+                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                      <Box sx={{ flex: 1 }}>
+                        <Typography variant="h6" gutterBottom>
+                          {booking.service?.name || 'Неизвестная услуга'}
                         </Typography>
-                      </TableCell>
-                      <TableCell>
-                        {formatDate(booking.bookingDate)}
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={getStatusText(booking.status)}
-                          color={getStatusColor(booking.status) as any}
-                          size="small"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        {booking.rejectionReason && (
-                          <Typography variant="body2" color="error">
-                            {booking.rejectionReason}
-                          </Typography>
-                        )}
-                        {booking.clientComment && (
-                          <Typography variant="body2" sx={{ maxWidth: 200 }}>
-                            {booking.clientComment}
-                          </Typography>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          )}
-        </Paper>
+                        <Typography variant="body2" color="text.secondary" gutterBottom>
+                          {booking.service?.description || 'Нет описания'}
+                        </Typography>
+                      </Box>
+                      <Chip
+                        label={getStatusText(booking.status)}
+                        color={getStatusColor(booking.status) as any}
+                        size="small"
+                      />
+                    </Box>
 
-        {/* Dialog для отмены записи */}
-        <Dialog open={openCancelDialog} onClose={() => setOpenCancelDialog(false)} maxWidth="sm" fullWidth>
-          <DialogTitle>Отменить запись</DialogTitle>
+                    <Divider sx={{ my: 2 }} />
+
+                    <Box sx={{ mb: 2 }}>
+                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                        <strong>Автосервис:</strong> {booking.serviceProvider?.serviceProfile?.name || 'Неизвестный автосервис'}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                        <strong>Адрес:</strong> {booking.serviceProvider?.serviceProfile?.address || 'Адрес не указан'}, {booking.serviceProvider?.serviceProfile?.city?.name || 'Город не указан'}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                        <strong>Дата и время:</strong> {formatDate(booking.bookingDate)}
+                      </Typography>
+                      {booking.clientComment && (
+                        <Typography variant="body2" color="text.secondary" gutterBottom>
+                          <strong>Комментарий:</strong> {booking.clientComment}
+                        </Typography>
+                      )}
+                    </Box>
+
+                    <Box sx={{ display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                      {booking.status !== 'cancelled' && (
+                        <Button
+                          variant="outlined"
+                          color="error"
+                          size="small"
+                          startIcon={<Cancel />}
+                          onClick={() => {
+                            setSelectedBooking(booking);
+                            setCancelDialogOpen(true);
+                          }}
+                        >
+                          Отменить
+                        </Button>
+                      )}
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        startIcon={<Edit />}
+                        disabled // Пока не реализовано
+                      >
+                        Изменить
+                      </Button>
+                    </Box>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </Box>
+        )}
+
+        {/* Диалог подтверждения отмены */}
+        <Dialog open={cancelDialogOpen} onClose={() => setCancelDialogOpen(false)}>
+          <DialogTitle>Отмена записи</DialogTitle>
           <DialogContent>
-            <Typography variant="body1" gutterBottom>
+            <Typography>
               Вы уверены, что хотите отменить запись на услугу "{selectedBooking?.service.name}"?
             </Typography>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
-              Это действие нельзя будет отменить.
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+              Дата: {selectedBooking && formatDate(selectedBooking.bookingDate)}
             </Typography>
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setOpenCancelDialog(false)}>Назад</Button>
+            <Button onClick={() => setCancelDialogOpen(false)}>
+              Назад
+            </Button>
             <Button
-              onClick={handleCancel}
-              variant="contained"
+              onClick={handleCancelBooking}
               color="error"
-              disabled={actionLoading}
+              variant="contained"
             >
               Отменить запись
             </Button>
