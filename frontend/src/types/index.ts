@@ -92,6 +92,7 @@ export interface Service extends BaseEntity {
   description?: string;
   price: number;
   durationMinutes: number;
+  availableDates?: string[];
   category?: ServiceCategory;
   serviceProfile?: ServiceProfile;
   appointments?: Appointment[];

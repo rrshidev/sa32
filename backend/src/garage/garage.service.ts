@@ -33,7 +33,7 @@ export class GarageService {
 
   async getUsersCars(userId: string): Promise<Car[]> {
     return this.carRepository.find({
-      where: { owner: { user: { id: userId } } },
+      where: { owner: { id: userId } },
       order: { id: 'DESC' },
     });
   }

@@ -4,9 +4,10 @@ import {
   Column,
   ManyToOne,
   OneToMany,
+  CreateDateColumn,
 } from 'typeorm';
-import { ClientProfile } from './client-profile.entity';
-import { Appointment } from './appointment.entity';
+import { User } from './user.entity';
+import { MaintenanceRecord } from './maintenance-record.entity';
 
 @Entity()
 export class Car {
@@ -28,9 +29,12 @@ export class Car {
   @Column({ nullable: true })
   mileage: number;
 
-  @ManyToOne(() => ClientProfile, (owner) => owner.cars)
-  owner: ClientProfile;
+  @CreateDateColumn()
+  createdAt: Date;
 
-  @OneToMany(() => Appointment, (appointment) => appointment.car)
-  appointments: Appointment[];
+  @ManyToOne(() => User, (user) => user.cars)
+  owner: User;
+
+  @OneToMany(() => MaintenanceRecord, (record) => record.car)
+  maintenanceRecords: MaintenanceRecord[];
 }
