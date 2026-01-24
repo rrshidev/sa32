@@ -228,12 +228,26 @@ const ServiceManagementPage = () => {
                     <Chip label={service.category?.name} size="small" />
                   </ListItem>
                 ))}
-                {(!serviceProfile.services || serviceProfile.services.length === 0) && (
-                  <Typography variant="body2" color="text.secondary" sx={{ py: 2, textAlign: 'center' }}>
-                    Услуги пока не добавлены
-                  </Typography>
-                )}
               </List>
+            </Paper>
+          </Box>
+
+          <Box flex="1" minWidth={300}>
+            <Paper sx={{ p: 3 }}>
+              <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                <Typography variant="h6">Записи</Typography>
+                <Button
+                  variant="contained"
+                  onClick={() => navigate('/bookings')}
+                  sx={{ backgroundColor: '#ff6b35', '&:hover': { backgroundColor: '#e55a2b' } }}
+                >
+                  Управление записями
+                </Button>
+              </Box>
+              
+              <Typography variant="body2" color="text.secondary">
+                Просматривайте и управляйте записями клиентов на ваши услуги. Подтверждайте или отклоняйте заявки.
+              </Typography>
             </Paper>
           </Box>
         </Box>

@@ -37,7 +37,7 @@ export class Appointment {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   updatedAt: Date;
 
-  @ManyToOne(() => Car, (car) => car.appointments)
+  @ManyToOne(() => Car, (car) => car.maintenanceRecords)
   car: Car;
 
   @ManyToOne(() => Service, (service) => service.appointments)

@@ -171,12 +171,12 @@ const ServiceListPage = () => {
                       <Box sx={{ p: 1, pt: 0 }}>
                         <Button
                           component={Link}
-                          to={`/appointments/new?serviceId=${service.id}`}
+                          to={`/services/${service.id}`}
                           variant="contained"
                           size="small"
                           fullWidth
                         >
-                          Записаться
+                          Подробнее и записаться
                         </Button>
                       </Box>
                     </Card>
