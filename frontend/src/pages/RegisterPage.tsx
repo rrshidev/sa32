@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Button, TextField, Typography, Paper, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import CitySelector from '../components/CitySelector';
 
 const RegisterPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [phone, setPhone] = useState('');
+  const [city, setCity] = useState('');
   const [role, setRole] = useState<'client' | 'service'>('client');
   const [error, setError] = useState('');
   const { register } = useAuth();
@@ -21,8 +23,13 @@ const RegisterPage = () => {
       return;
     }
 
+    if (!city.trim()) {
+      setError('Пожалуйста, выберите город');
+      return;
+    }
+
     try {
-      await register(email, password, phone, role);
+      await register(email, password, phone, role, city.trim());
       navigate('/');
     } catch (err) {
       setError('Ошибка регистрации');
@@ -96,6 +103,14 @@ const RegisterPage = () => {
             onChange={(e) => setPhone(e.target.value)}
             required
           />
+          
+          <div style={{ width: '100%', maxWidth: 400, margin: '8px 0' }}>
+            <CitySelector
+              value={city}
+              onChange={setCity}
+              placeholder="Выберите ваш город"
+            />
+          </div>
           
           <TextField
             label="Пароль"
