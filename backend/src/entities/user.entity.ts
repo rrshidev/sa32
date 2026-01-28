@@ -25,6 +25,9 @@ export class User {
   @Column({ nullable: true, type: 'varchar' })
   telegramId: string | null;
 
+  @Column({ nullable: true, type: 'varchar' })
+  telegramChatId: string | null;
+
   @Column({ unique: true })
   email: string;
 

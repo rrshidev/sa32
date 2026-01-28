@@ -68,6 +68,8 @@ export interface ServiceProfile extends BaseEntity {
 export interface User extends BaseEntity {
   email: string;
   phone?: string;
+  telegramId?: string;
+  telegramChatId?: string;
   role: UserRole;
   clientProfile?: ClientProfile;
   serviceProfile?: ServiceProfile;

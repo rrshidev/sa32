@@ -15,6 +15,11 @@ export class UpdateUserDto {
   @ApiProperty({ required: false })
   @IsOptional()
   @IsString()
+  telegramId?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  @IsString()
   currentPassword?: string;
 
   @ApiProperty({ required: false })

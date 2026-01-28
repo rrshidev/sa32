@@ -5,6 +5,7 @@ import { Booking, BookingStatus } from './entities/booking.entity';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { User } from '../entities/user.entity';
 import { Service } from '../entities/service.entity';
+import { BookingNotificationService } from './booking-notification.service';
 
 @Injectable()
 export class BookingService {
@@ -15,6 +16,7 @@ export class BookingService {
     private readonly userRepo: Repository<User>,
     @InjectRepository(Service)
     private readonly serviceRepo: Repository<Service>,
+    private readonly bookingNotificationService: BookingNotificationService,
   ) {}
 
   async createBooking(clientId: string, createBookingDto: CreateBookingDto): Promise<Booking> {
@@ -52,6 +54,20 @@ export class BookingService {
     });
 
     const savedBooking = await this.bookingRepo.save(booking);
+    
+    // Отправляем уведомления
+    try {
+      await this.bookingNotificationService.notifyNewBooking(
+        savedBooking.id,
+        clientId,
+        serviceProvider.id,
+        service.name,
+        bookingDateTime
+      );
+    } catch (error) {
+      console.error('Failed to send booking notifications:', error);
+      // Не прерываем процесс, если уведомления не отправились
+    }
     
     // Загружаем полную информацию о записи
     const fullBooking = await this.bookingRepo.findOne({
@@ -108,7 +124,22 @@ export class BookingService {
       booking.rejectionReason = rejectionReason;
     }
 
-    return this.bookingRepo.save(booking);
+    const savedBooking = await this.bookingRepo.save(booking);
+    
+    // Отправляем уведомление клиенту об изменении статуса
+    try {
+      await this.bookingNotificationService.notifyBookingStatusChanged(
+        savedBooking.id,
+        booking.client.id,
+        status,
+        booking.service.name
+      );
+    } catch (error) {
+      console.error('Failed to send booking status notification:', error);
+      // Не прерываем процесс, если уведомления не отправились
+    }
+    
+    return savedBooking;
   }
 
   async cancelBooking(id: string, clientId: string): Promise<Booking> {

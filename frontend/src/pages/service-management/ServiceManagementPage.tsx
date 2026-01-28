@@ -182,6 +182,46 @@ const ServiceManagementPage = () => {
           <Box flex="1" minWidth={300}>
             <Paper sx={{ p: 3 }}>
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                <Typography variant="h6">Профиль пользователя</Typography>
+                <Button 
+                  variant="outlined" 
+                  size="small"
+                  onClick={() => window.location.href = '/profile'}
+                >
+                  Редактировать
+                </Button>
+              </Box>
+              
+              <Typography variant="body1" gutterBottom>
+                <strong>Email:</strong> {user?.email}
+              </Typography>
+              <Typography variant="body1" gutterBottom>
+                <strong>Телефон:</strong> {user?.phone || 'Не указан'}
+              </Typography>
+              <Typography variant="body1" gutterBottom>
+                <strong>Telegram ID:</strong> {user?.telegramId || 'Не указан'}
+              </Typography>
+              {!user?.telegramId && (
+                <Alert severity="info" sx={{ mt: 2 }}>
+                  Добавьте Telegram ID в профиле для получения уведомлений о записях
+                </Alert>
+              )}
+              {user?.telegramId && !user?.telegramChatId && (
+                <Alert severity="warning" sx={{ mt: 2 }}>
+                  Telegram ID добавлен, но нужно активировать уведомления. Отправьте команду /start боту
+                </Alert>
+              )}
+              {user?.telegramId && user?.telegramChatId && (
+                <Alert severity="success" sx={{ mt: 2 }}>
+                  ✅ Уведомления в Telegram настроены
+                </Alert>
+              )}
+            </Paper>
+          </Box>
+
+          <Box flex="1" minWidth={300}>
+            <Paper sx={{ p: 3 }}>
+              <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                 <Typography variant="h6">Информация об автосервисе</Typography>
                 <IconButton onClick={() => setOpenDialog(true)}>
                   <Edit />

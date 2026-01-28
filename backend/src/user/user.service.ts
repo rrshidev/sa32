@@ -58,6 +58,7 @@ export class UserService {
 
     if (updateData.email) user.email = updateData.email;
     if (updateData.phone) user.phone = updateData.phone;
+    if (updateData.telegramId) user.telegramId = updateData.telegramId;
 
     if (updateData.newPassword) {
       if (!updateData.currentPassword) {
