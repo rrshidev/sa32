@@ -5,6 +5,7 @@ import ProtectedRoute from './ProtectedRoute';
 import HomePage from '../pages/HomePage';
 import ProfilePage from '../pages/ProfilePage';
 import ServiceManagementPage from '../pages/service-management/ServiceManagementPage';
+import BookingsPage from '../pages/service-management/BookingsPage';
 import CreateServicePage from '../pages/services/CreateServicePage';
 import { useAuth } from '../contexts/AuthContext';
 import ServiceListPage from '../pages/services/ServiceListPage';
@@ -75,7 +76,7 @@ const AppRoutes = () => {
         path="/bookings"
         element={
           <ProtectedRoute isAllowed={isAuthenticated} redirectTo="/login">
-            <Navigate to="/service-management" replace />
+            <BookingsPage />
           </ProtectedRoute>
         }
       />

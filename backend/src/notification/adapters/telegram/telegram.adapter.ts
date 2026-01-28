@@ -1,13 +1,20 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { NotificationPayload } from '../../interfaces/notification-payload.interface';
 import { Telegraf } from 'telegraf';
+import { User } from '../../../entities/user.entity';
 
 @Injectable()
 export class TelegramAdapter {
   private bot: Telegraf;
 
-  constructor(private configService: ConfigService) {
+  constructor(
+    private configService: ConfigService,
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+  ) {
     const token: string = configService.getOrThrow('TELEGRAM_BOT_TOKEN');
     this.bot = new Telegraf(token);
     console.log(
@@ -21,19 +28,36 @@ export class TelegramAdapter {
   private setupMiniAppHandlers() {
     this.bot.command('start', async (ctx) => {
       console.log('Start command received from:', ctx.from.id);
-      // Сохраняем chat_id при команде /start
-      const chatId = ctx.chat.id;
-      const userId = ctx.from.id.toString();
+      const chatId = ctx.chat.id.toString();
+      const telegramId = ctx.from.id.toString();
 
-      // Здесь должна быть логика сохранения связи userId ↔ chatId в БД
-      console.log(`User ${userId} started chat with chatId ${chatId}`);
+      // Ищем пользователя по telegramId или создаем связь
+      let user = await this.userRepository.findOne({ 
+        where: { telegramId } 
+      });
 
-      await ctx.reply('Добро пожаловать!', {
+      if (user) {
+        // Обновляем chatId если найден пользователь
+        user.telegramChatId = chatId;
+        await this.userRepository.save(user);
+        console.log(`Updated user ${user.id} with chatId ${chatId}`);
+      } else {
+        console.log(`User with telegramId ${telegramId} not found in database`);
+        await ctx.reply(
+          '🔍 *Пользователь не найден*\n\n' +
+          'Пожалуйста, сначала зарегистрируйтесь в приложении и укажите ваш Telegram ID в профиле.\n' +
+          'Ваш Telegram ID: `' + telegramId + '`',
+          { parse_mode: 'Markdown' }
+        );
+        return;
+      }
+
+      await ctx.reply('✅ *Уведомления включены!*\n\nТеперь вы будете получать уведомления о записях в этом чате.', {
         reply_markup: {
           inline_keyboard: [
             [
               {
-                text: 'Открыть приложение',
+                text: '🚀 Открыть приложение',
                 web_app: {
                   url: this.configService.getOrThrow('TELEGRAM_WEBHOOK_URL'),
                 },
@@ -48,14 +72,19 @@ export class TelegramAdapter {
   private async getTelegramUser(
     userId: string,
   ): Promise<{ telegramChatId: string } | null> {
-    // Заглушка - в реальности нужно получать из БД
-    // Пример реализации:
-    // return this.userRepository.findOne({ where: { id: userId } });
-    return { telegramChatId: '123456789' }; // Замените на реальный chat_id
+    const user = await this.userRepository.findOne({ 
+      where: { id: userId } 
+    });
+    
+    if (user && user.telegramChatId) {
+      return { telegramChatId: user.telegramChatId };
+    }
+    
+    return null;
   }
 
   async send(payload: NotificationPayload): Promise<boolean> {
-    const user = await this.getTelegramUser(payload.userId); // Добавьте await
+    const user = await this.getTelegramUser(payload.userId);
     if (user) {
       try {
         await this.bot.telegram.sendMessage(
