@@ -7,7 +7,6 @@ import {
   UseGuards,
   Req,
   Patch,
-  Delete,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -50,22 +49,17 @@ export class BookingController {
     return this.bookingService.getBookingById(id);
   }
 
-  @Patch(':id/status')
-  @ApiOperation({ summary: 'Update booking status (for service providers)' })
-  @ApiResponse({ status: 200, description: 'Booking status updated' })
-  async updateBookingStatus(
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update booking (status change or cancellation)' })
+  @ApiResponse({ status: 200, description: 'Booking updated' })
+  async updateBooking(
     @Param('id') id: string,
     @Body() body: { status: BookingStatus; rejectionReason?: string },
     @Req() req,
   ) {
-    // TODO: Add authorization check to ensure only service provider can update status
+    if (body.status === BookingStatus.CANCELLED) {
+      return this.bookingService.cancelBooking(id, req.user.sub);
+    }
     return this.bookingService.updateBookingStatus(id, body.status, body.rejectionReason);
-  }
-
-  @Patch(':id/cancel')
-  @ApiOperation({ summary: 'Cancel booking (for clients)' })
-  @ApiResponse({ status: 200, description: 'Booking cancelled' })
-  async cancelBooking(@Param('id') id: string, @Req() req) {
-    return this.bookingService.cancelBooking(id, req.user.sub);
   }
 }

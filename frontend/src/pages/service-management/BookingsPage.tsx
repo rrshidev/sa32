@@ -75,7 +75,7 @@ const BookingsPage = () => {
   const handleConfirm = async (bookingId: string) => {
     setActionLoading(true);
     try {
-      await apiClient.patch(`/booking/${bookingId}/status`, {
+      await apiClient.patch(`/booking/${bookingId}`, {
         status: BookingStatus.CONFIRMED,
       });
       await loadBookings();
@@ -90,7 +90,7 @@ const BookingsPage = () => {
     if (!selectedBooking) return;
     setActionLoading(true);
     try {
-      await apiClient.patch(`/booking/${selectedBooking.id}/status`, {
+      await apiClient.patch(`/booking/${selectedBooking.id}`, {
         status: BookingStatus.REJECTED,
         rejectionReason: rejectionReason || undefined,
       });
@@ -189,7 +189,7 @@ const BookingsPage = () => {
                       <TableCell>
                         <Box>
                           <Typography variant="body2" fontWeight="bold">
-                            {booking.client.clientProfile 
+                            {booking.client.clientProfile
                               ? `${booking.client.clientProfile.firstName} ${booking.client.clientProfile.lastName}`
                               : booking.client.email
                             }

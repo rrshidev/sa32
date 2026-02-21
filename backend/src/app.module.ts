@@ -14,6 +14,7 @@ import { ServiceCategoryModule } from './service-category/service-category.modul
 import { SeedModule } from './database/seed.module';
 import { BookingModule } from './booking/booking.module';
 import { CarModule } from './car/car.module';
+import { ClientProfileModule } from './client-profile/client-profile.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { CarModule } from './car/car.module';
     SeedModule,
     BookingModule,
     CarModule,
+    ClientProfileModule,
   ],
 })
 export class AppModule {}

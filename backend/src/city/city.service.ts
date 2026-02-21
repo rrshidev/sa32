@@ -94,13 +94,18 @@ export class CityService {
         // Сначала сортируем по активности, потом по алфавиту
         const aScore = (a.serviceCount || 0) + (a.clientCount || 0);
         const bScore = (b.serviceCount || 0) + (b.clientCount || 0);
-        
+
         if (bScore !== aScore) {
           return bScore - aScore; // Более активные города первыми
         }
-        
+
         return a.name.localeCompare(b.name); // Затем по алфавиту
       });
+  }
+
+  async findByName(name: string): Promise<City | null> {
+    if (!name) return null;
+    return this.cityRepo.findOne({ where: { name } });
   }
 
   async validateCity(cityName: string, countryCode: string = 'RU'): Promise<boolean> {
@@ -108,13 +113,13 @@ export class CityService {
     if (!cityName || cityName.trim().length < 2) {
       return false;
     }
-    
+
     // Проверяем, что название состоит только из букв, дефисов и пробелов
     const validNamePattern = /^[а-яёА-ЯЁa-zA-Z\s\-]+$/;
     if (!validNamePattern.test(cityName.trim())) {
       return false;
     }
-    
+
     // Сначала проверяем, есть ли город в нашей базе
     const existingCity = await this.cityRepo.findOne({
       where: { name: cityName }
@@ -127,17 +132,17 @@ export class CityService {
     // Проверяем, есть ли город в списке российских городов
     const fs = require('fs');
     const path = require('path');
-    
+
     // Пробуем разные пути к файлу
     const possiblePaths = [
       path.join(__dirname, '../data/russia-cities.ts'),
       path.join(__dirname, '../../src/data/russia-cities.ts'),
       '/usr/src/app/src/data/russia-cities.ts'
     ];
-    
+
     let fileContent: string | null = null;
     let usedPath = null;
-    
+
     for (const russiaCitiesPath of possiblePaths) {
       try {
         fileContent = fs.readFileSync(russiaCitiesPath, 'utf8');
@@ -148,21 +153,21 @@ export class CityService {
         console.log('Failed to read from:', russiaCitiesPath, error.message);
       }
     }
-    
+
     if (!fileContent) {
       console.error('Could not find russia-cities.ts in any location');
       return false;
     }
-    
+
     console.log('Reading russia-cities.ts file, size:', fileContent.length);
-    
+
     try {
       // Извлекаем массив городов из файла
       const match = fileContent.match(/export const RUSSIA_CITIES = \[([\s\S]*?)\];/);
       if (match) {
         const citiesArray = match[1];
         console.log('Cities array extracted, length:', citiesArray.length);
-        
+
         // Извлекаем строки в кавычках
         const cityMatches = citiesArray.match(/'([^']+)'/g);
         if (cityMatches) {
@@ -170,7 +175,7 @@ export class CityService {
           console.log('Parsed cities count:', cities.length);
           console.log('Looking for city:', cityName.trim());
           console.log('City found in list:', cities.includes(cityName.trim()));
-          
+
           if (cities.includes(cityName.trim())) {
             console.log(`City ${cityName} found in RUSSIA_CITIES list`);
             return true;
@@ -188,10 +193,10 @@ export class CityService {
     // Если нет в базе и в списке, проверяем через GeoNames API
     try {
       const url = `http://api.geonames.org/searchJSON?name_equals=${encodeURIComponent(cityName)}&country=${countryCode}&featureClass=P&maxRows=1&username=demo`;
-      
+
       const response = await fetch(url);
       const data = await response.json();
-      
+
       return data.geonames && data.geonames.length > 0;
     } catch (error) {
       console.error('GeoNames API error:', error);
@@ -212,7 +217,7 @@ export class CityService {
         name: cityName,
         // В будущем можно добавить координаты из GeoNames
       });
-      
+
       city = await this.cityRepo.save(city);
     }
 
@@ -222,7 +227,7 @@ export class CityService {
   async addCityToProfile(profileType: 'client' | 'service', profileId: string, cityName: string, countryCode?: string): Promise<void> {
     // Сначала валидируем город
     const isValid = await this.validateCity(cityName, countryCode);
-    
+
     if (!isValid) {
       throw new Error('Город не найден или не существует');
     }

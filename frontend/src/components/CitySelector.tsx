@@ -83,26 +83,31 @@ const CitySelector: React.FC<CitySelectorProps> = ({
     setValidationError('');
 
     try {
-      // Проверяем и регистрируем город через наш API
-      const response = await apiClient.post('/cities/validate-and-register', {
-        cityName: cityName.trim(),
-        countryCode: detectedCountry
+      // RESTful: создаём город (или получаем существующий)
+      const response = await apiClient.post('/cities', {
+        name: cityName.trim(),
+        countryCode: detectedCountry,
       });
 
-      if (response.data.isValid && response.data.registered) {
-        // Город успешно зарегистрирован
-        console.log(`Город ${cityName.trim()} успешно зарегистрирован`);
-        
+      if (response.status === 200 || response.status === 201) {
+        const city = response.data as City;
+        console.log(`Город ${cityName.trim()} успешно ${response.status === 201 ? 'создан' : 'найден'}`);
+
         // Перезагружаем список доступных городов
         await loadAvailableCities();
-        
-        onChange(cityName.trim());
-      } else {
-        setValidationError('Город не найден. Проверьте правильность написания.');
+
+        onChange(cityName.trim(), city);
       }
     } catch (error) {
       console.error('City validation failed:', error);
-      setValidationError('Не удалось проверить город. Попробуйте позже.');
+      // Если сервер вернул 400 — некорректное имя города
+      // @ts-ignore
+      const status = error?.response?.status;
+      if (status === 400) {
+        setValidationError('Город не найден. Проверьте правильность написания.');
+      } else {
+        setValidationError('Не удалось проверить город. Попробуйте позже.');
+      }
     } finally {
       setIsValidating(false);
     }
@@ -123,7 +128,7 @@ const CitySelector: React.FC<CitySelectorProps> = ({
     if (newValue) {
       setInputValue(newValue);
       onChange(newValue.trim());
-      
+
       // Валидация в фоне, только если город не из списка
       if (!availableCities.some(city => city.name.toLowerCase() === newValue.toLowerCase())) {
         validateCity(newValue);
@@ -136,7 +141,7 @@ const CitySelector: React.FC<CitySelectorProps> = ({
       <Typography variant="subtitle2" gutterBottom>
         {label}
       </Typography>
-      
+
       <Autocomplete
         freeSolo
         options={allOptions}
@@ -165,7 +170,7 @@ const CitySelector: React.FC<CitySelectorProps> = ({
         renderOption={(props, option) => {
           const isAvailable = availableCities.some(city => city.name === option);
           const cityData = availableCities.find(city => city.name === option);
-          
+
           return (
             <li {...props}>
               <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>

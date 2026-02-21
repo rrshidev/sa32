@@ -80,9 +80,11 @@ const ClientBookingsPage = () => {
     if (!selectedBooking) return;
 
     try {
-      await apiClient.patch(`/booking/${selectedBooking.id}/cancel`);
-      setBookings(bookings.map(b => 
-        b.id === selectedBooking.id 
+      await apiClient.patch(`/booking/${selectedBooking.id}`, {
+        status: 'cancelled',
+      });
+      setBookings(bookings.map(b =>
+        b.id === selectedBooking.id
           ? { ...b, status: 'cancelled' }
           : b
       ));
@@ -195,7 +197,7 @@ const ClientBookingsPage = () => {
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             {bookings.map((booking, index) => {
               console.log(`ClientBookingsPage - Rendering booking ${index}:`, booking);
-              
+
               // Безопасная проверка данных
               if (!booking || !booking.service || !booking.serviceProvider) {
                 console.error('ClientBookingsPage - Invalid booking data:', booking);
