@@ -15,6 +15,9 @@ export class City {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @Column({ nullable: true })
+  country: string;
+
   @Column()
   name: string;
 

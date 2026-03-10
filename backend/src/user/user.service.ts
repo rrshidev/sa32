@@ -49,7 +49,23 @@ export class UserService {
     // Создаем экземпляр пользователя
     const user = this.userRepository.create(userData);
     
-    // Сохраняем в БД
+    // Создаем соответствующий профиль в зависимости от роли
+    if (userData.role === UserRole.CLIENT) {
+      const clientProfile = this.clientProfileRepository.create({
+        firstName: '',
+        lastName: '',
+      });
+      user.clientProfile = clientProfile;
+    } else if (userData.role === UserRole.SERVICE) {
+      const serviceProfile = this.serviceProfileRepository.create({
+        name: '',
+        description: '',
+        address: '',
+      });
+      user.serviceProfile = serviceProfile;
+    }
+    
+    // Сохраняем в БД с каскадным сохранением профилей
     return await this.userRepository.save(user);
   }
 

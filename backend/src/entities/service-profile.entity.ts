@@ -17,16 +17,16 @@ export class ServiceProfile {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ nullable: true })
   name: string;
 
-  @Column()
+  @Column({ nullable: true })
   address: string;
 
   @Column({ nullable: true })
   description: string;
 
-  @ManyToOne(() => City, (city) => city.serviceProfiles)
+  @ManyToOne(() => City, (city) => city.serviceProfiles, { nullable: true })
   @JoinColumn({ name: 'city_id' })
   city: City;
 

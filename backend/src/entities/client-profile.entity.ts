@@ -16,13 +16,13 @@ export class ClientProfile {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column()
+  @Column({ nullable: true })
   firstName: string;
 
-  @Column()
+  @Column({ nullable: true })
   lastName: string;
 
-  @ManyToOne(() => City, (city) => city.clientProfile)
+  @ManyToOne(() => City, (city) => city.clientProfile, { nullable: true })
   @JoinColumn({ name: 'city_id' })
   city: City;
 
