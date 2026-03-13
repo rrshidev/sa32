@@ -1,0 +1,59 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16.2
+    container_name: sa32-postgres
+    environment:
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "5435:5432"
+    volumes:
+      - sa32_postgres_data:/var/lib/postgresql/data
+    networks:
+      - sa32-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sa32-backend
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_DATABASE=${DB_DATABASE}
+      - JWT_SECRET=${JWT_SECRET}
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_WEBHOOK_URL=${TELEGRAM_WEBHOOK_URL}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+    networks:
+      - sa32-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sa32-frontend
+    environment:
+      - VITE_API_URL=${VITE_API_URL}
+    ports:
+      - "3001:3000"
+    depends_on:
+      - backend
+    networks:
+      - sa32-network
+
+volumes:
+  sa32_postgres_data:
+
+networks:
+  sa32-network:
+    driver: bridge
