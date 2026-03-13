@@ -11,6 +11,12 @@ Thumbs.db
 .env.test
 .env.production
 
+# Docker Compose файлы (ЧУВСТВИТЕЛЬНЫЕ ДАННЫЕ!)
+docker-compose.yml
+docker-compose.*.yml
+**/docker-compose.yml
+**/docker-compose.*.yml
+
 # Логи и кэш
 *.log
 logs
