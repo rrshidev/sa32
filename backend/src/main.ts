@@ -43,6 +43,11 @@ async function bootstrap(): Promise<void> {
       'http://localhost:5173', // Vite dev server
       'http://localhost:3001', // Docker frontend
       'http://localhost:3000', // Docker frontend fallback
+      'http://localhost:80',   // Nginx reverse proxy
+      'http://localhost',      // Nginx reverse proxy (default port)
+      'http://localhost:8081', // Direct frontend access
+      'https://sa32.ru',       // Production domain
+      'https://www.sa32.ru',   // Production www domain
     ],
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: false, // Изменено на false для решения CORS проблем
@@ -91,7 +96,7 @@ async function bootstrap(): Promise<void> {
   =====================================================
   🚀 Server started on port ${port}
   📄 Swagger: http://localhost:${port}/api
-  🌐 CORS enabled for: localhost:5173, localhost:3001
+  🌐 CORS enabled for: localhost:5173, localhost:3001, localhost:80, localhost, localhost:8081
   🔗 API prefix: /api
   =====================================================
   `);
