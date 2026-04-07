@@ -130,8 +130,10 @@ export class CityService {
     
     // Пробуем разные пути к файлу
     const possiblePaths = [
-      path.join(__dirname, '../data/russia-cities.ts'),
+      path.join(__dirname, '../data/russia-cities.js'),
+      path.join(__dirname, '../../dist/src/data/russia-cities.js'),
       path.join(__dirname, '../../src/data/russia-cities.ts'),
+      '/usr/src/app/dist/data/russia-cities.js',
       '/usr/src/app/src/data/russia-cities.ts'
     ];
     
@@ -157,8 +159,8 @@ export class CityService {
     console.log('Reading russia-cities.ts file, size:', fileContent.length);
     
     try {
-      // Извлекаем массив городов из файла
-      const match = fileContent.match(/export const RUSSIA_CITIES = \[([\s\S]*?)\];/);
+      // Извлекаем массив городов из файла (поддерживает TS: export const, и JS: exports.RUSSIA_CITIES)
+      const match = fileContent.match(/(?:export const|exports\.\w+)\s+RUSSIA_CITIES\s*=\s*\[([\s\S]*?)\];/);
       if (match) {
         const citiesArray = match[1];
         console.log('Cities array extracted, length:', citiesArray.length);
